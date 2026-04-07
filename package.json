@@ -1,5 +1,5 @@
 {
-	"name": "@liiift-studio/weight-hover",
+	"name": "@liiift-studio/bold-lock",
 	"version": "0.0.1",
 	"description": "Variable font weight hover and bold interactions without layout shift \u2014 wght increase with automatic wdth/tracking compensation",
 	"type": "module",
@@ -48,7 +48,7 @@
 	"keywords": [
 		"typography",
 		"variable-font",
-		"weight-hover"
+		"bold-lock"
 	],
 	"author": "Quinn Keaveney <quinn@liiift.studio>",
 	"license": "MIT"

@@ -1,11 +1,11 @@
-// weight-hover/src/__tests__/adjust.test.ts — core algorithm tests
+// bold-lock/src/__tests__/adjust.test.ts — core algorithm tests
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import {
 	getFontVariationSettings,
 	calcCompensation,
-	applyWeightHover,
+	applyBoldLock,
 	applyBoldShift,
-	removeWeightHover,
+	removeBoldLock,
 	getCleanHTML,
 } from '../core/adjust'
 
@@ -131,12 +131,12 @@ describe('calcCompensation', () => {
 	})
 })
 
-// ─── applyWeightHover ─────────────────────────────────────────────────────────
+// ─── applyBoldLock ─────────────────────────────────────────────────────────────
 
-describe('applyWeightHover', () => {
+describe('applyBoldLock', () => {
 	beforeEach(() => {
 		document.body.innerHTML = ''
-		// Provide canvas + getComputedStyle stubs so applyWeightHover can run
+		// Provide canvas + getComputedStyle stubs so applyBoldLock can run
 		stubComputedStyle()
 		spyCanvas(8, 10)
 	})
@@ -149,7 +149,7 @@ describe('applyWeightHover', () => {
 		const el = makeElement('Hello world')
 		const addSpy = vi.spyOn(el, 'addEventListener')
 
-		applyWeightHover(el, { normalWeight: 400, hoverWeight: 700 })
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
 
 		const types = addSpy.mock.calls.map((c) => c[0])
 		expect(types).toContain('mouseenter')
@@ -160,7 +160,7 @@ describe('applyWeightHover', () => {
 		const el = makeElement('Hello world')
 		const removeSpy = vi.spyOn(el, 'removeEventListener')
 
-		const cleanup = applyWeightHover(el, { normalWeight: 400, hoverWeight: 700 })
+		const cleanup = applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
 		cleanup()
 
 		const types = removeSpy.mock.calls.map((c) => c[0])
@@ -170,7 +170,7 @@ describe('applyWeightHover', () => {
 
 	it('restores element styles after cleanup', () => {
 		const el = makeElement('Hello world')
-		const cleanup = applyWeightHover(el, { normalWeight: 400, hoverWeight: 700 })
+		const cleanup = applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
 
 		// Trigger hover to dirty styles
 		el.dispatchEvent(new MouseEvent('mouseenter'))
@@ -184,7 +184,7 @@ describe('applyWeightHover', () => {
 
 	it('sets fontVariationSettings and letterSpacing on mouseenter', () => {
 		const el = makeElement('Hello world')
-		applyWeightHover(el, { normalWeight: 400, hoverWeight: 700 })
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
 
 		el.dispatchEvent(new MouseEvent('mouseenter'))
 		expect(el.style.fontVariationSettings).toContain('wght')
@@ -193,7 +193,7 @@ describe('applyWeightHover', () => {
 
 	it('clears letterSpacing on mouseleave', () => {
 		const el = makeElement('Hello world')
-		applyWeightHover(el, { normalWeight: 400, hoverWeight: 700 })
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
 
 		el.dispatchEvent(new MouseEvent('mouseenter'))
 		el.dispatchEvent(new MouseEvent('mouseleave'))
@@ -202,7 +202,7 @@ describe('applyWeightHover', () => {
 
 	it('returns a function in all cases', () => {
 		const el = makeElement('test')
-		const cleanup = applyWeightHover(el, {})
+		const cleanup = applyBoldLock(el, {})
 		expect(typeof cleanup).toBe('function')
 	})
 })
@@ -237,7 +237,7 @@ describe('applyBoldShift', () => {
 
 // ─── Legacy helpers ────────────────────────────────────────────────────────────
 
-describe('getCleanHTML / removeWeightHover', () => {
+describe('getCleanHTML / removeBoldLock', () => {
 	beforeEach(() => {
 		document.body.innerHTML = ''
 	})
@@ -247,11 +247,11 @@ describe('getCleanHTML / removeWeightHover', () => {
 		expect(getCleanHTML(el)).toBe(getCleanHTML(el))
 	})
 
-	it('removeWeightHover restores original HTML', () => {
+	it('removeBoldLock restores original HTML', () => {
 		const el = makeElementHTML('<em>Hello</em> world')
 		const original = getCleanHTML(el)
 		el.innerHTML = '<span>mutated</span>'
-		removeWeightHover(el, original)
+		removeBoldLock(el, original)
 		expect(el.innerHTML).toBe(original)
 	})
 })

@@ -10,7 +10,7 @@ export default function Home() {
 			{/* Hero */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex flex-col gap-2">
-					<p className="text-xs uppercase tracking-widest opacity-50">weight-hover</p>
+					<p className="text-xs uppercase tracking-widest opacity-50">bold-lock</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 700', lineHeight: "1.05em" }}>
 						Bold on hover.<br />
 						<span style={{ opacity: 0.5, fontVariationSettings: '"wght" 300', fontStyle: "italic" }}>Zero layout shift.</span>
@@ -18,13 +18,13 @@ export default function Home() {
 				</div>
 				<div className="flex items-center gap-4">
 					<CopyInstall />
-					<a href="https://github.com/quitequinn/weight-hover" target="_blank" rel="noopener noreferrer" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub ↗</a>
+					<a href="https://github.com/quitequinn/bold-lock" target="_blank" rel="noopener noreferrer" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub ↗</a>
 				</div>
 				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-50 tracking-wide">
 					<span>TypeScript</span><span>·</span><span>Canvas measurement</span><span>·</span><span>React + Vanilla JS</span>
 				</div>
 				<p className="text-base opacity-60 leading-relaxed max-w-lg">
-					Every browser will reflow text when you hover to bold — words push down, lines shift. Weight Hover measures the exact width difference using Canvas, then compensates with letter-spacing so the line never moves.
+					Every browser will reflow text when you hover to bold — words push down, lines shift. Bold Lock measures the exact width difference using Canvas, then compensates with letter-spacing so the line never moves.
 				</p>
 			</section>
 
@@ -59,17 +59,17 @@ export default function Home() {
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Drop-in component</p>
-						<CodeBlock code={`import { WeightHoverText } from '@liiift-studio/weight-hover'
+						<CodeBlock code={`import { BoldLockText } from '@liiift-studio/bold-lock'
 
-<WeightHoverText normalWeight={300} hoverWeight={700} transitionDuration={150}>
+<BoldLockText normalWeight={300} hoverWeight={700} transitionDuration={150}>
   Hover over this text...
-</WeightHoverText>`} />
+</BoldLockText>`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Hook</p>
-						<CodeBlock code={`import { useWeightHover } from '@liiift-studio/weight-hover'
+						<CodeBlock code={`import { useBoldLock } from '@liiift-studio/bold-lock'
 
-const ref = useWeightHover({ normalWeight: 300, hoverWeight: 700 })
+const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 <p ref={ref}>{children}</p>`} />
 					</div>
 					<div className="flex flex-col gap-3">
@@ -89,7 +89,7 @@ const ref = useWeightHover({ normalWeight: 300, hoverWeight: 700 })
 
 			{/* Footer */}
 			<footer className="w-full max-w-2xl lg:max-w-5xl flex justify-between text-xs opacity-50 pt-8 border-t border-white/10">
-				<span>weight-hover v{version}</span>
+				<span>bold-lock v{version}</span>
 				<a href="https://liiift.studio" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">Liiift Studio</a>
 			</footer>
 

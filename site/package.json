@@ -1,5 +1,5 @@
 {
-	"name": "weight-hover-site",
+	"name": "bold-lock-site",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
@@ -12,7 +12,7 @@
 		"next": "16.2.2",
 		"react": "19.2.4",
 		"react-dom": "19.2.4",
-		"@liiift-studio/weight-hover": "file:.."
+		"@liiift-studio/bold-lock": "file:.."
 	},
 	"devDependencies": {
 		"@tailwindcss/postcss": "^4",

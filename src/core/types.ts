@@ -1,7 +1,7 @@
-// weight-hover/src/core/types.ts — types and class constants
+// bold-lock/src/core/types.ts — types and class constants
 
-/** Options for the interactive weight-hover mode (mouseenter/mouseleave) */
-export interface WeightHoverOptions {
+/** Options for the interactive bold-lock mode (mouseenter/mouseleave) */
+export interface BoldLockOptions {
 	/** wght axis value at rest — defaults to computed font-weight */
 	normalWeight?: number
 	/** wght axis value on hover — defaults to 700 */
@@ -20,8 +20,8 @@ export interface BoldShiftOptions {
 	boldWeight?: number
 }
 
-/** CSS class names injected by weight-hover — use these to target generated markup */
-export const WEIGHT_HOVER_CLASSES = {
+/** CSS class names injected by bold-lock — use these to target generated markup */
+export const BOLD_LOCK_CLASSES = {
 	probe: 'wh-probe',
 	word: 'wh-word',
 } as const

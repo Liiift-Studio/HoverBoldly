@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useDeferredValue } from "react"
-import { WeightHoverText } from "@liiift-studio/weight-hover"
+import { BoldLockText } from "@liiift-studio/bold-lock"
 
 const SAMPLE = `Hover over this paragraph to feel the weight change. The font grows heavier as your cursor moves over the text — but look carefully: the line endings stay exactly where they are. No word wraps to the next line. No layout shifts. The trick is measuring the width difference between the two weights using Canvas, then compensating with letter-spacing so the total advance width stays constant. Bold text normally pushes words around. This doesn't.`
 
@@ -37,9 +37,9 @@ export default function Demo() {
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
 				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
 			</div>
-			<WeightHoverText normalWeight={dNormal} hoverWeight={dHover} transitionDuration={dDuration} style={sampleStyle}>
+			<BoldLockText normalWeight={dNormal} hoverWeight={dHover} transitionDuration={dDuration} style={sampleStyle}>
 				{SAMPLE}
-			</WeightHoverText>
+			</BoldLockText>
 			<p className="text-xs opacity-50 italic mt-6">Move your cursor over the paragraph. Line endings stay fixed.</p>
 		</div>
 	)

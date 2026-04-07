@@ -1,6 +1,6 @@
-// weight-hover/src/core/adjust.ts — framework-agnostic core algorithm
+// bold-lock/src/core/adjust.ts — framework-agnostic core algorithm
 
-import type { WeightHoverOptions, BoldShiftOptions } from './types'
+import type { BoldLockOptions, BoldShiftOptions } from './types'
 
 /**
  * Parse an element's computed fontVariationSettings into a key/value map.
@@ -53,12 +53,12 @@ export function calcCompensation(
 }
 
 /**
- * Apply the interactive weight-hover effect to an element.
+ * Apply the interactive bold-lock effect to an element.
  * Adds mouseenter/mouseleave listeners and returns a cleanup function.
  */
-export function applyWeightHover(
+export function applyBoldLock(
 	element: HTMLElement,
-	options: WeightHoverOptions,
+	options: BoldLockOptions,
 ): () => void {
 	if (typeof window === 'undefined') return () => {}
 
@@ -130,20 +130,20 @@ export function applyBoldShift(element: HTMLElement, options: BoldShiftOptions =
 }
 
 /**
- * Remove weight-hover markup and restore original HTML.
+ * Remove bold-lock markup and restore original HTML.
  * Kept for backwards compatibility with callers that pass originalHTML.
  */
-export function removeWeightHover(element: HTMLElement, originalHTML: string): void {
+export function removeBoldLock(element: HTMLElement, originalHTML: string): void {
 	element.innerHTML = originalHTML
 }
 
 /**
- * Strip any prior weight-hover markup from an element and return clean innerHTML.
+ * Strip any prior bold-lock markup from an element and return clean innerHTML.
  * Safe to call multiple times — idempotent.
  */
 export function getCleanHTML(el: HTMLElement): string {
 	const clone = el.cloneNode(true) as HTMLElement
-	clone.querySelectorAll('[data-weight-hover]').forEach((node) => {
+	clone.querySelectorAll('[data-bold-lock]').forEach((node) => {
 		node.replaceWith(...node.childNodes)
 	})
 	return clone.innerHTML
