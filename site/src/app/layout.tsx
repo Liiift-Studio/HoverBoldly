@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		title: "Bold Lock — Bold on hover, zero layout shift",
 		description: "Text goes bold on hover. The line width stays exactly the same. No reflow, no shift.",
-		url: "https://bold-lock.liiift.studio",
+		url: "https://hoverboldly.com",
 		siteName: "Bold Lock",
 		type: "website",
 	},
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 		title: "Bold Lock — Bold on hover, zero layout shift",
 		description: "Text goes bold on hover. The line width stays exactly the same. No reflow, no shift.",
 	},
-	metadataBase: new URL("https://bold-lock.liiift.studio"),
+	metadataBase: new URL("https://hoverboldly.com"),
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
