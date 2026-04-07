@@ -1,7 +1,7 @@
 {
-	"name": "@liiift-studio/bold-lock",
+	"name": "@liiift-studio/hover-boldly",
 	"version": "0.0.1",
-	"description": "Variable font weight hover and bold interactions without layout shift \u2014 wght increase with automatic wdth/tracking compensation",
+	"description": "Variable font weight hover and bold interactions without layout shift — wght increase with automatic wdth/tracking compensation",
 	"type": "module",
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",

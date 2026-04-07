@@ -3,8 +3,8 @@
 // Click-to-copy npm install snippet with a link to the npm package page
 import { useState } from "react"
 
-const CMD = "npm install @liiift-studio/bold-lock"
-const NPM_URL = "https://www.npmjs.com/package/@liiift-studio/bold-lock"
+const CMD = "npm install @liiift-studio/hover-boldly"
+const NPM_URL = "https://www.npmjs.com/package/@liiift-studio/hover-boldly"
 
 /** Displays the install command, copies it to clipboard on click, and links to npm */
 export default function CopyInstall() {

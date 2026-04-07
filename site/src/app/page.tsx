@@ -59,7 +59,7 @@ export default function Home() {
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Drop-in component</p>
-						<CodeBlock code={`import { BoldLockText } from '@liiift-studio/bold-lock'
+						<CodeBlock code={`import { BoldLockText } from '@liiift-studio/hover-boldly'
 
 <BoldLockText normalWeight={300} hoverWeight={700} transitionDuration={150}>
   Hover over this text...
@@ -67,7 +67,7 @@ export default function Home() {
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Hook</p>
-						<CodeBlock code={`import { useBoldLock } from '@liiift-studio/bold-lock'
+						<CodeBlock code={`import { useBoldLock } from '@liiift-studio/hover-boldly'
 
 const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 <p ref={ref}>{children}</p>`} />
