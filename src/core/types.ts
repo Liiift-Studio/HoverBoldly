@@ -1,4 +1,4 @@
-// bold-lock/src/core/types.ts — types and class constants
+// hoverBoldly/src/core/types.ts — types and class constants
 
 /** Options for the interactive bold-lock mode (mouseenter/mouseleave) */
 export interface BoldLockOptions {

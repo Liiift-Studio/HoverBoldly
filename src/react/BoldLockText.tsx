@@ -1,4 +1,4 @@
-// bold-lock/src/react/BoldLockText.tsx — React component wrapper
+// hoverBoldly/src/react/BoldLockText.tsx — React component wrapper
 import React, { forwardRef } from 'react'
 import { useBoldLock } from './useBoldLock'
 import type { BoldLockOptions } from '../core/types'

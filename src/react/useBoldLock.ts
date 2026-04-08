@@ -1,4 +1,4 @@
-// bold-lock/src/react/useBoldLock.ts — React hook
+// hoverBoldly/src/react/useBoldLock.ts — React hook
 import { useEffect, useRef } from 'react'
 import { applyBoldLock } from '../core/adjust'
 import type { BoldLockOptions } from '../core/types'
