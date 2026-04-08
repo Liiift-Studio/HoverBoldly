@@ -83,7 +83,7 @@ export default function Demo() {
 			if (!el) return
 			el.style.display = 'inline-block'
 			el.style.verticalAlign = 'baseline'
-			el.style.overflow = 'visible'
+			el.style.overflow = 'hidden'
 			el.style.width = `${widths[i]}px`
 		})
 	}, [dNormal])
@@ -113,9 +113,9 @@ export default function Demo() {
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
 				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
 			</div>
-			<div className="relative pb-8">
+			<div className="relative pb-8" style={{ overflow: 'hidden' }}>
 				<p
-					style={sampleStyle}
+					style={{ ...sampleStyle, overflowWrap: 'break-word' }}
 					onMouseLeave={() => setActiveIdx(DEFAULT_WORD_IDX)}
 				>
 					{WORDS.map((word, i) => (
