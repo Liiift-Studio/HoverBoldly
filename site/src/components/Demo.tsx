@@ -80,7 +80,7 @@ export default function Demo() {
 							onMouseEnter={() => setActiveIdx(i)}
 							onTouchStart={() => setActiveIdx(i)}
 						>
-							{word}{i < WORDS.length - 1 ? '\u00a0' : ''}
+							{word}{i < WORDS.length - 1 ? ' ' : ''}
 						</span>
 					))}
 				</p>
