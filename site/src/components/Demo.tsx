@@ -18,6 +18,31 @@ function Slider({ label, value, min, max, step, onChange }: { label: string; val
 	)
 }
 
+function CompareButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+	return (
+		<button
+			onClick={onClick}
+			aria-label="Toggle before/after comparison"
+			title={active ? 'Hide comparison' : 'Compare without effect'}
+			style={{
+				position: 'absolute', bottom: 0, right: 0,
+				width: 32, height: 32, borderRadius: '50%',
+				border: '1px solid currentColor',
+				opacity: active ? 0.8 : 0.25,
+				background: 'transparent',
+				display: 'flex', alignItems: 'center', justifyContent: 'center',
+				cursor: 'pointer', transition: 'opacity 0.15s ease',
+			}}
+		>
+			<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+				<circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1"/>
+				<path d="M7 1.5 A5.5 5.5 0 0 1 7 12.5 Z" fill="currentColor"/>
+				<line x1="7" y1="1.5" x2="7" y2="12.5" stroke="currentColor" strokeWidth="0.75" opacity="0.5"/>
+			</svg>
+		</button>
+	)
+}
+
 export default function Demo() {
 	const [normalWeight, setNormalWeight] = useState(300)
 	const [hoverWeight, setHoverWeight] = useState(700)
@@ -42,7 +67,6 @@ export default function Demo() {
 	useLayoutEffect(() => {
 		const refs = wordRefs.current
 
-		// Reset all to normal for accurate measurement
 		refs.forEach(el => {
 			if (!el) return
 			el.style.display = 'inline'
@@ -52,10 +76,8 @@ export default function Demo() {
 			el.style.transition = 'none'
 		})
 
-		// Sync layout read — locks in measured widths
 		const widths = refs.map(el => el?.getBoundingClientRect().width ?? 0)
 
-		// Fix each word's layout width as inline-block
 		refs.forEach((el, i) => {
 			if (!el) return
 			el.style.display = 'inline-block'
@@ -65,8 +87,7 @@ export default function Demo() {
 		})
 	}, [dNormal])
 
-	// Apply bold state to the active word; reset all others.
-	// useLayoutEffect fires before paint so there is no flash of uncompensated layout.
+	// Apply bold to the active word before paint — no flash of uncompensated layout.
 	useLayoutEffect(() => {
 		wordRefs.current.forEach((el, i) => {
 			if (!el) return
@@ -86,16 +107,12 @@ export default function Demo() {
 
 	return (
 		<div className="w-full">
-			<div className="grid grid-cols-3 gap-6 mb-6">
+			<div className="grid grid-cols-3 gap-6 mb-8">
 				<Slider label="Normal weight" value={normalWeight} min={100} max={500} step={100} onChange={setNormalWeight} />
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
 				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
 			</div>
-			<div className="flex flex-wrap items-center gap-3 mb-8">
-				<span className="text-xs uppercase tracking-widest opacity-50">Compare</span>
-				<button onClick={() => setComparing(v => !v)} className="text-xs px-3 py-1 rounded-full border transition-opacity" style={{ borderColor: 'currentColor', opacity: comparing ? 1 : 0.5, background: comparing ? 'var(--btn-bg)' : 'transparent' }}>without</button>
-			</div>
-			<div className="relative">
+			<div className="relative pb-8">
 				<p
 					style={sampleStyle}
 					onMouseLeave={() => setActiveIdx(DEFAULT_WORD_IDX)}
@@ -118,6 +135,7 @@ export default function Demo() {
 				{comparing && (
 					<p aria-hidden style={{ ...sampleStyle, position: 'absolute', top: 0, left: 0, width: '100%', margin: 0, opacity: 0.25, pointerEvents: 'none' }}>{SAMPLE}</p>
 				)}
+				<CompareButton active={comparing} onClick={() => setComparing(v => !v)} />
 			</div>
 			<p className="text-xs opacity-50 italic mt-6">One word is bold by default. Move your cursor — or tap on mobile — to target any word. Line endings stay fixed.</p>
 		</div>
