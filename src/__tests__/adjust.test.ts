@@ -255,3 +255,124 @@ describe('getCleanHTML / removeBoldLock', () => {
 		expect(el.innerHTML).toBe(original)
 	})
 })
+
+// ─── Extended coverage ─────────────────────────────────────────────────────────
+
+describe('getFontVariationSettings — extended', () => {
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it("parses a single-axis value correctly", () => {
+		const el = document.createElement('p')
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: "'wdth' 85",
+		} as unknown as CSSStyleDeclaration)
+		expect(getFontVariationSettings(el)).toEqual({ wdth: 85 })
+	})
+
+	it("parses float axis values correctly", () => {
+		const el = document.createElement('p')
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: "'wght' 300.5, 'wdth' 99.75",
+		} as unknown as CSSStyleDeclaration)
+		const result = getFontVariationSettings(el)
+		expect(result.wght).toBeCloseTo(300.5)
+		expect(result.wdth).toBeCloseTo(99.75)
+	})
+})
+
+describe('applyBoldLock — extended', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: 'normal',
+			fontSize: '16px',
+			fontFamily: 'sans-serif',
+			fontWeight: '400',
+		} as unknown as CSSStyleDeclaration)
+		const realCreate = document.createElement.bind(document)
+		vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+			if (tag === 'canvas') {
+				let call = 0
+				return {
+					getContext: () => ({
+						font: '',
+						measureText: (text: string) => ({ width: text.length * (++call === 1 ? 8 : 10) }),
+					}),
+				} as unknown as HTMLCanvasElement
+			}
+			return realCreate(tag)
+		})
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('does not throw when called with default options (no options object)', () => {
+		const el = document.createElement('p')
+		el.textContent = 'Hello world'
+		document.body.appendChild(el)
+		expect(() => applyBoldLock(el, {})).not.toThrow()
+	})
+
+	it('transition style is applied to the element', () => {
+		const el = document.createElement('p')
+		el.textContent = 'Hello world'
+		document.body.appendChild(el)
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700, transitionDuration: 200 })
+		el.dispatchEvent(new MouseEvent('mouseenter'))
+		expect(el.style.transition).toContain('200ms')
+	})
+
+	it('cleanup can be called multiple times without throwing', () => {
+		const el = document.createElement('p')
+		el.textContent = 'Hello world'
+		document.body.appendChild(el)
+		const cleanup = applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
+		expect(() => { cleanup(); cleanup() }).not.toThrow()
+	})
+
+	it('fontVariationSettings on mouseenter contains hoverWeight', () => {
+		const el = document.createElement('p')
+		el.textContent = 'Hello world'
+		document.body.appendChild(el)
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
+		el.dispatchEvent(new MouseEvent('mouseenter'))
+		expect(el.style.fontVariationSettings).toContain('700')
+	})
+})
+
+describe('applyBoldShift — extended', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		document.head.innerHTML = ''
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: 'normal', fontSize: '16px',
+			fontFamily: 'sans-serif', fontWeight: '400',
+		} as unknown as CSSStyleDeclaration)
+		const realCreate = document.createElement.bind(document)
+		vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+			if (tag === 'canvas') {
+				let call = 0
+				return { getContext: () => ({ font: '', measureText: (text: string) => ({ width: text.length * (++call === 1 ? 8 : 10) }) }) } as unknown as HTMLCanvasElement
+			}
+			return realCreate(tag)
+		})
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('two separate calls produce two distinct data-bold-shift values', () => {
+		const el1 = document.createElement('p')
+		el1.textContent = 'Link one'
+		document.body.appendChild(el1)
+		const el2 = document.createElement('p')
+		el2.textContent = 'Link two'
+		document.body.appendChild(el2)
+		applyBoldShift(el1, { normalWeight: 400, boldWeight: 700 })
+		applyBoldShift(el2, { normalWeight: 400, boldWeight: 700 })
+		const id1 = el1.getAttribute('data-bold-shift')
+		const id2 = el2.getAttribute('data-bold-shift')
+		expect(id1).toBeTruthy()
+		expect(id2).toBeTruthy()
+		expect(id1).not.toBe(id2)
+	})
+})
