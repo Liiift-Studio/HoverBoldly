@@ -1,6 +1,7 @@
 // bold-lock/src/core/adjust.ts — framework-agnostic core algorithm
 
 import type { BoldLockOptions, BoldShiftOptions } from './types'
+import { BOLD_LOCK_CLASSES } from './types'
 
 /**
  * Parse an element's computed fontVariationSettings into a key/value map.
@@ -64,13 +65,83 @@ export function applyBoldLock(
 	const normalWeight = options.normalWeight ?? (isNaN(computedWeight) ? 400 : computedWeight)
 	const hoverWeight = options.hoverWeight ?? 700
 	const duration = options.transitionDuration ?? 150
+	const currentFvs = getFontVariationSettings(element)
+
+	// --- mode: 'word' — each word is an independent hover target ---
+	if (options.mode === 'word') {
+		const originalHTML = element.innerHTML
+
+		// Collect all text nodes via recursive childNodes walk
+		const textNodes: Text[] = []
+		;(function collect(node: Node) {
+			if (node.nodeType === Node.TEXT_NODE) textNodes.push(node as Text)
+			else node.childNodes.forEach(collect)
+		})(element)
+
+		const wordSpans: HTMLElement[] = []
+
+		for (const textNode of textNodes) {
+			const text = textNode.textContent ?? ''
+			if (!text.trim()) continue
+			const tokens = text.split(/(\S+)/)
+			const fragment = document.createDocumentFragment()
+			for (let i = 0; i < tokens.length; i += 2) {
+				const space = tokens[i]
+				const word = tokens[i + 1]
+				if (!word) continue
+				const isLastWord = tokens[i + 3] === undefined
+				const trailingSpace = isLastWord ? (tokens[i + 2] ?? '') : ''
+				const span = document.createElement('span')
+				span.className = BOLD_LOCK_CLASSES.word
+				span.appendChild(document.createTextNode(space + word + trailingSpace))
+				fragment.appendChild(span)
+				wordSpans.push(span)
+			}
+			textNode.parentNode!.replaceChild(fragment, textNode)
+		}
+
+		// Batch all compensation reads before attaching listeners
+		const wordData = wordSpans.map((span) => {
+			const compPx = calcCompensation(span, normalWeight, hoverWeight)
+			const fs = parseFloat(getComputedStyle(span).fontSize)
+			const compEm = fs > 0 ? compPx / fs : 0
+			return { span, compEm }
+		})
+
+		const cleanups: (() => void)[] = []
+
+		for (const { span, compEm } of wordData) {
+			const onEnter = () => {
+				const newFvs = { ...currentFvs, wght: hoverWeight }
+				span.style.fontVariationSettings = Object.entries(newFvs).map(([k, v]) => `'${k}' ${v}`).join(', ')
+				span.style.letterSpacing = `${compEm}em`
+				span.style.transition = `font-variation-settings ${duration}ms ease, letter-spacing ${duration}ms ease`
+			}
+			const onLeave = () => {
+				const newFvs = { ...currentFvs, wght: normalWeight }
+				span.style.fontVariationSettings = Object.entries(newFvs).map(([k, v]) => `'${k}' ${v}`).join(', ')
+				span.style.letterSpacing = ''
+			}
+			span.addEventListener('mouseenter', onEnter)
+			span.addEventListener('mouseleave', onLeave)
+			cleanups.push(() => {
+				span.removeEventListener('mouseenter', onEnter)
+				span.removeEventListener('mouseleave', onLeave)
+			})
+		}
+
+		return () => {
+			cleanups.forEach((fn) => fn())
+			element.innerHTML = originalHTML
+		}
+	}
+
+	// --- mode: 'element' (default) — whole element hovers together ---
 
 	// Pre-calculate compensation at mount time (single DOM read burst)
 	const compensationPx = calcCompensation(element, normalWeight, hoverWeight)
 	const fontSize = parseFloat(getComputedStyle(element).fontSize)
 	const compensationEm = fontSize > 0 ? compensationPx / fontSize : 0
-
-	const currentFvs = getFontVariationSettings(element)
 
 	const onEnter = () => {
 		const newFvs = { ...currentFvs, wght: hoverWeight }
