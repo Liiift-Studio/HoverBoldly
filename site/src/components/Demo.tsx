@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useDeferredValue, useLayoutEffect, useRef } from "react"
+import { useState, useEffect, useDeferredValue, useLayoutEffect, useRef } from "react"
 import { calcCompensation } from "@liiift-studio/hoverboldly"
 
 const SAMPLE = `Hover over this paragraph to feel the weight change. The font grows heavier as your cursor moves over the text — but look carefully: the line endings stay exactly where they are. No word wraps to the next line. No layout shifts. The trick is measuring the width difference between the two weights using Canvas, then compensating with letter-spacing so the total advance width stays constant. Bold text normally pushes words around. This doesn't.`
@@ -57,6 +57,11 @@ export default function Demo() {
 
 	const wordRefs = useRef<(HTMLSpanElement | null)[]>(Array(WORDS.length).fill(null))
 
+	const [fontsReady, setFontsReady] = useState(false)
+	useEffect(() => {
+		document.fonts.ready.then(() => setFontsReady(true))
+	}, [])
+
 	const sampleStyle: React.CSSProperties = {
 		fontFamily: "var(--font-merriweather), serif",
 		fontSize: "1.125rem",
@@ -86,7 +91,7 @@ export default function Demo() {
 			el.style.overflow = 'hidden'
 			el.style.width = `${widths[i]}px`
 		})
-	}, [dNormal])
+	}, [dNormal, fontsReady])
 
 	// Apply bold to the active word before paint — no flash of uncompensated layout.
 	useLayoutEffect(() => {
@@ -107,13 +112,13 @@ export default function Demo() {
 	}, [activeIdx, dNormal, dHover, dDuration])
 
 	return (
-		<div className="w-full">
+		<div className="w-full" style={{ overflow: 'hidden' }}>
 			<div className="grid grid-cols-3 gap-6 mb-8">
 				<Slider label="Normal weight" value={normalWeight} min={100} max={500} step={100} onChange={setNormalWeight} />
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
 				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
 			</div>
-			<div className="relative pb-8" style={{ overflow: 'hidden' }}>
+			<div className="relative pb-8">
 				<p
 					style={{ ...sampleStyle, overflowWrap: 'break-word' }}
 					onMouseLeave={() => setActiveIdx(DEFAULT_WORD_IDX)}

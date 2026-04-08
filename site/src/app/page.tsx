@@ -74,6 +74,16 @@ const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 <p ref={ref}>{children}</p>`} />
 					</div>
 					<div className="flex flex-col gap-3">
+						<p className="opacity-50">Vanilla JS</p>
+						<CodeBlock code={`import { applyBoldLock } from '@liiift-studio/hoverboldly'
+
+const el = document.querySelector('p')
+const cleanup = applyBoldLock(el, { normalWeight: 300, hoverWeight: 700 })
+
+// Later — remove listeners and reset styles:
+cleanup()`} />
+					</div>
+					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Options</p>
 						<table className="w-full text-xs">
 							<thead><tr className="opacity-50 text-left"><th className="pb-2 pr-6 font-normal">Option</th><th className="pb-2 pr-6 font-normal">Default</th><th className="pb-2 font-normal">Description</th></tr></thead>
