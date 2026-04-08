@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useDeferredValue, useEffect, useRef } from "react"
+import { useState, useDeferredValue, useLayoutEffect, useRef } from "react"
 import { calcCompensation } from "@liiift-studio/hoverboldly"
 
 const SAMPLE = `Hover over this paragraph to feel the weight change. The font grows heavier as your cursor moves over the text — but look carefully: the line endings stay exactly where they are. No word wraps to the next line. No layout shifts. The trick is measuring the width difference between the two weights using Canvas, then compensating with letter-spacing so the total advance width stays constant. Bold text normally pushes words around. This doesn't.`
@@ -37,19 +37,47 @@ export default function Demo() {
 		lineHeight: "1.8",
 	}
 
-	// Apply bold state to the active word and normal state to all others
-	useEffect(() => {
+	// Measure and lock each word's layout width at normal weight.
+	// Fixed inline-block width prevents any reflow when a word goes bold.
+	useLayoutEffect(() => {
+		const refs = wordRefs.current
+
+		// Reset all to normal for accurate measurement
+		refs.forEach(el => {
+			if (!el) return
+			el.style.display = 'inline'
+			el.style.width = 'auto'
+			el.style.fontVariationSettings = `'wght' ${dNormal}`
+			el.style.letterSpacing = ''
+			el.style.transition = 'none'
+		})
+
+		// Sync layout read — locks in measured widths
+		const widths = refs.map(el => el?.getBoundingClientRect().width ?? 0)
+
+		// Fix each word's layout width as inline-block
+		refs.forEach((el, i) => {
+			if (!el) return
+			el.style.display = 'inline-block'
+			el.style.verticalAlign = 'baseline'
+			el.style.overflow = 'visible'
+			el.style.width = `${widths[i]}px`
+		})
+	}, [dNormal])
+
+	// Apply bold state to the active word; reset all others.
+	// useLayoutEffect fires before paint so there is no flash of uncompensated layout.
+	useLayoutEffect(() => {
 		wordRefs.current.forEach((el, i) => {
 			if (!el) return
+			el.style.transition = `font-variation-settings ${dDuration}ms ease, letter-spacing ${dDuration}ms ease`
 			if (i === activeIdx) {
 				const comp = calcCompensation(el, dNormal, dHover)
 				const fontSize = parseFloat(getComputedStyle(el).fontSize)
 				const compEm = fontSize > 0 ? comp / fontSize : 0
-				el.style.transition = `font-variation-settings ${dDuration}ms ease, letter-spacing ${dDuration}ms ease`
 				el.style.fontVariationSettings = `'wght' ${dHover}`
 				el.style.letterSpacing = `${compEm}em`
 			} else {
-				el.style.transition = `font-variation-settings ${dDuration}ms ease, letter-spacing ${dDuration}ms ease`
 				el.style.fontVariationSettings = `'wght' ${dNormal}`
 				el.style.letterSpacing = ''
 			}
@@ -76,13 +104,16 @@ export default function Demo() {
 						<span
 							key={i}
 							ref={el => { wordRefs.current[i] = el }}
-							style={{ display: 'inline', fontVariationSettings: `'wght' ${dNormal}` }}
 							onMouseEnter={() => setActiveIdx(i)}
 							onTouchStart={() => setActiveIdx(i)}
 						>
-							{word}{i < WORDS.length - 1 ? ' ' : ''}
+							{word}
 						</span>
-					))}
+					)).reduce<React.ReactNode[]>((acc, span, i) => {
+						acc.push(span)
+						if (i < WORDS.length - 1) acc.push(' ')
+						return acc
+					}, [])}
 				</p>
 				{comparing && (
 					<p aria-hidden style={{ ...sampleStyle, position: 'absolute', top: 0, left: 0, width: '100%', margin: 0, opacity: 0.25, pointerEvents: 'none' }}>{SAMPLE}</p>
