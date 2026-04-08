@@ -17,9 +17,9 @@
 }
 
 :root {
-	--background: #160927;
+	--background: hsl(45,  65%, 9%); /* hue 45° */
 	--foreground: #f0ece3;
-	--btn-bg: #2d2240;
+	--btn-bg: hsl(45,  40%, 17%);
 	--font-sans: sans-serif;
 	--font-merriweather: "Merriweather";
 }
