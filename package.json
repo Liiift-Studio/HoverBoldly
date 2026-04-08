@@ -1,5 +1,5 @@
 {
-	"name": "@liiift-studio/hoverBoldly",
+	"name": "@liiift-studio/hoverboldly",
 	"version": "0.0.1",
 	"description": "Variable font weight hover and bold interactions without layout shift — wght increase with automatic wdth/tracking compensation",
 	"type": "module",
@@ -39,6 +39,7 @@
 		"@types/react": "^19.0.0",
 		"@vitejs/plugin-react": "^4.0.0",
 		"happy-dom": "^12.0.0",
+		"next": "16.2.2",
 		"react": "^19.0.0",
 		"typescript": "^5.0.0",
 		"vite": "^6.0.0",
@@ -48,8 +49,21 @@
 	"keywords": [
 		"typography",
 		"variable-font",
-		"bold-lock"
+		"hover",
+		"bold",
+		"layout-shift",
+		"wght",
+		"react",
+		"typescript"
 	],
 	"author": "Quinn Keaveney <quinn@liiift.studio>",
-	"license": "MIT"
+	"license": "MIT",
+	"homepage": "https://hoverboldly.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Liiift-Studio/HoverBoldly.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Liiift-Studio/HoverBoldly/issues"
+	}
 }
