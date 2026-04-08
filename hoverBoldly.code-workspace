@@ -1,0 +1,30 @@
+{
+  "folders": [
+    { "name": "hoverBoldly (lib)", "path": "." },
+    { "name": "hoverBoldly (site)", "path": "site" }
+  ],
+  "settings": {
+    "git.ignoreLimitWarning": true,
+    "svg.preview.background": "custom",
+    "typescript.tsdk": "site/node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "tailwindCSS.experimental.configFile": "site/tailwind.config.ts",
+    "vitest.enable": true,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "bradlc.vscode-tailwindcss",
+      "vitest.explorer",
+      "ms-vscode.vscode-typescript-next",
+      "jock.svg"
+    ]
+  }
+}
