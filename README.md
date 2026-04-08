@@ -21,3 +21,7 @@ See [hoverboldly.com](https://hoverboldly.com) for full API docs and a live demo
 `package.json` at the repo root lists `next` as a devDependency. This is a **Vercel detection workaround** — not a real dependency of the npm package. Vercel's build system inspects the root `package.json` to detect the framework; without `next` present it falls back to a static build and skips the Next.js pipeline, breaking the `/site` subdirectory deploy.
 
 The package itself has zero runtime dependencies. Do not remove this entry.
+
+---
+
+Current version: v0.0.11
