@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="hsl(40,55%,10%)"/>
+
+  <!-- Before hover: thin lines (top half) -->
+  <rect x="9" y="9"  width="46" height="4" rx="2" fill="#f0ece3" opacity="0.4"/>
+  <rect x="9" y="18" width="34" height="4" rx="2" fill="#f0ece3" opacity="0.4"/>
+
+  <!-- After hover: bold lines (bottom half) -->
+  <rect x="9" y="35" width="46" height="10" rx="5" fill="#f0ece3"/>
+  <rect x="9" y="50" width="34" height="10" rx="5" fill="#f0ece3" opacity="0.75"/>
+</svg>
