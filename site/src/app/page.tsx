@@ -11,7 +11,7 @@ export default function Home() {
 			{/* Hero */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex flex-col gap-2">
-					<p className="text-xs uppercase tracking-widest opacity-50">bold-lock</p>
+					<p className="text-xs uppercase tracking-widest opacity-50">hoverboldly</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 700', lineHeight: "1.05em" }}>
 						Bold on hover.<br />
 						<span style={{ opacity: 0.5, fontVariationSettings: '"wght" 300', fontStyle: "italic" }}>Zero layout shift.</span>
@@ -19,7 +19,7 @@ export default function Home() {
 				</div>
 				<div className="flex items-center gap-4">
 					<CopyInstall />
-					<a href="https://github.com/quitequinn/bold-lock" target="_blank" rel="noopener noreferrer" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub ↗</a>
+					<a href="https://github.com/Liiift-Studio/HoverBoldly" target="_blank" rel="noopener noreferrer" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub ↗</a>
 				</div>
 				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-50 tracking-wide">
 					<span>TypeScript</span><span>·</span><span>Canvas measurement</span><span>·</span><span>React + Vanilla JS</span>
