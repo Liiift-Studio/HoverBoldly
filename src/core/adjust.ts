@@ -23,12 +23,10 @@ export function getFontVariationSettings(el: HTMLElement): Record<string, number
 export function measureAtWeight(el: HTMLElement, wght: number, canvas: HTMLCanvasElement): number {
 	const style = getComputedStyle(el)
 	const ctx = canvas.getContext('2d')!
-	const currentFvs = getFontVariationSettings(el)
-	const newFvs = { ...currentFvs, wght }
-	const fvsString = Object.entries(newFvs)
-		.map(([k, v]) => `'${k}' ${v}`)
-		.join(', ')
-	ctx.font = `${fvsString} ${style.fontSize} ${style.fontFamily}`
+	// Use numeric font-weight in the CSS font shorthand — this is valid and Canvas parses it correctly.
+	// The previous fvsString approach produced invalid CSS (e.g. "'wght' 700 18px Family") which
+	// Canvas silently rejected, causing both weights to measure identically and compensation to be 0.
+	ctx.font = `${wght} ${style.fontSize} ${style.fontFamily}`
 	return ctx.measureText(el.textContent ?? '').width
 }
 
