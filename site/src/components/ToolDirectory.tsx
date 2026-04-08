@@ -22,8 +22,8 @@ export default function ToolDirectory({ current }: { current: string }) {
 					<a
 						key={tool.id}
 						href={tool.url}
-						target="_blank"
-						rel="noopener noreferrer"
+						
+						
 						className="opacity-30 hover:opacity-100 transition-opacity"
 					>
 						{tool.name}
