@@ -19,7 +19,7 @@ export default function Home() {
 				</div>
 				<div className="flex items-center gap-4">
 					<CopyInstall />
-					<a href="https://github.com/Liiift-Studio/HoverBoldly" target="_blank" rel="noopener noreferrer" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub ↗</a>
+					<a href="https://github.com/Liiift-Studio/HoverBoldly" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub</a>
 				</div>
 				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-50 tracking-wide">
 					<span>TypeScript</span><span>·</span><span>Canvas measurement</span><span>·</span><span>React + Vanilla JS</span>
@@ -93,7 +93,7 @@ const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 				<ToolDirectory current="hoverBoldly" />
 				<div className="flex justify-between opacity-50">
 				<span>hoverBoldly v{version}</span>
-				<a href="https://liiift.studio" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 transition-opacity">Liiift Studio</a>
+				<a href="https://liiift.studio" className="hover:opacity-100 transition-opacity">Liiift Studio</a>
 				</div>
 			</footer>
 
