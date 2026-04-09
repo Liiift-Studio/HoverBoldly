@@ -65,7 +65,9 @@ export function applyBoldLock(
 	const computedWeight = parseFloat(getComputedStyle(element).fontWeight)
 	const normalWeight = options.normalWeight ?? (isNaN(computedWeight) ? 400 : computedWeight)
 	const hoverWeight = options.hoverWeight ?? 700
-	const duration = options.transitionDuration ?? 150
+	// Respect prefers-reduced-motion: skip the CSS transition when motion is reduced
+	const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+	const duration = prefersReducedMotion ? 0 : (options.transitionDuration ?? 150)
 	const currentFvs = getFontVariationSettings(element)
 
 	// --- mode: 'word' — each word is an independent hover target ---
@@ -177,6 +179,10 @@ export function applyBoldLock(
 	const onTouchEnd   = (e: TouchEvent) => { e.preventDefault(); onLeave() }
 	element.addEventListener('touchstart', onTouchStart, { passive: false })
 	element.addEventListener('touchend',   onTouchEnd,   { passive: false })
+	// Keyboard support — focusin/focusout fire when the element or any descendant
+	// (e.g. a link inside the paragraph) gains or loses keyboard focus.
+	element.addEventListener('focusin',  onEnter)
+	element.addEventListener('focusout', onLeave)
 
 	// Return a cleanup function that tears down listeners and resets styles
 	return () => {
@@ -184,6 +190,8 @@ export function applyBoldLock(
 		element.removeEventListener('mouseleave', onLeave)
 		element.removeEventListener('touchstart', onTouchStart)
 		element.removeEventListener('touchend',   onTouchEnd)
+		element.removeEventListener('focusin',  onEnter)
+		element.removeEventListener('focusout', onLeave)
 		element.style.fontVariationSettings = ''
 		element.style.letterSpacing = ''
 		element.style.transition = ''
