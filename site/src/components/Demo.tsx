@@ -66,6 +66,7 @@ export default function Demo() {
 		fontFamily: "var(--font-merriweather), serif",
 		fontSize: "1.125rem",
 		lineHeight: "1.8",
+		fontVariationSettings: '"wght" 300, "opsz" 18, "wdth" 100',
 	}
 
 	// Measure and lock each word's layout width at normal weight.
@@ -79,7 +80,7 @@ export default function Demo() {
 			if (!el) return
 			el.style.display = 'inline'
 			el.style.width = 'auto'
-			el.style.fontVariationSettings = `'wght' ${dNormal}`
+			el.style.fontVariationSettings = `'wght' ${dNormal}, 'opsz' 18, 'wdth' 100`
 			el.style.letterSpacing = ''
 			el.style.transition = 'none'
 		})
@@ -103,10 +104,10 @@ export default function Demo() {
 				const comp = calcCompensation(el, dNormal, dHover)
 				const fontSize = parseFloat(getComputedStyle(el).fontSize)
 				const compEm = fontSize > 0 ? comp / fontSize : 0
-				el.style.fontVariationSettings = `'wght' ${dHover}`
+				el.style.fontVariationSettings = `'wght' ${dHover}, 'opsz' 18, 'wdth' 100`
 				el.style.letterSpacing = `${compEm}em`
 			} else {
-				el.style.fontVariationSettings = `'wght' ${dNormal}`
+				el.style.fontVariationSettings = `'wght' ${dNormal}, 'opsz' 18, 'wdth' 100`
 				el.style.letterSpacing = ''
 			}
 		})
