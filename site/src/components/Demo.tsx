@@ -114,7 +114,7 @@ export default function Demo() {
 	}, [activeIdx, dNormal, dHover, dDuration])
 
 	return (
-		<div className="w-full" style={{ overflow: 'hidden' }}>
+		<div className="w-full">
 			<div className="grid grid-cols-3 gap-6 mb-8">
 				<Slider label="Normal weight" value={normalWeight} min={100} max={500} step={100} onChange={setNormalWeight} />
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />

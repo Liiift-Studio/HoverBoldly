@@ -14,7 +14,7 @@ const TOOLS = [
 /** Links to all tools; highlights the current one without a link. */
 export default function ToolDirectory({ current }: { current: string }) {
 	return (
-		<nav aria-label="Other type tools" className="flex flex-wrap gap-x-5 gap-y-1">
+		<nav aria-label="Other type tools" className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-2">
 			{TOOLS.map((tool) =>
 				tool.id === current ? (
 					<span key={tool.id} className="opacity-100">{tool.name}</span>
