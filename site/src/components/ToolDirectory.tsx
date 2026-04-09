@@ -17,14 +17,14 @@ export default function ToolDirectory({ current }: { current: string }) {
 		<nav aria-label="Other type tools" className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-2">
 			{TOOLS.map((tool) =>
 				tool.id === current ? (
-					<span key={tool.id} className="opacity-100">{tool.name}</span>
+					<span key={tool.id} className="opacity-100 text-left">{tool.name}</span>
 				) : (
 					<a
 						key={tool.id}
 						href={tool.url}
 						
 						
-						className="opacity-30 hover:opacity-100 transition-opacity"
+						className="opacity-30 hover:opacity-100 transition-opacity text-left"
 					>
 						{tool.name}
 					</a>
