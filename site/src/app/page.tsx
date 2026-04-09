@@ -12,7 +12,7 @@ export default function Home() {
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex flex-col gap-2">
 					<p className="text-xs uppercase tracking-widest opacity-50">hoverboldly</p>
-					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 700, "opsz" 72', lineHeight: "1.05em" }}>
+					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 72', lineHeight: "1.05em" }}>
 						Bold on hover,<br />
 						<span style={{ opacity: 0.5, fontVariationSettings: '"wght" 300, "opsz" 72', fontStyle: "italic" }}>Zero layout shift.</span>
 					</h1>
