@@ -125,9 +125,17 @@ export function applyBoldLock(
 			}
 			span.addEventListener('mouseenter', onEnter)
 			span.addEventListener('mouseleave', onLeave)
+			// Touch support — touchstart activates the word, touchend deactivates it.
+			// mouseenter/mouseleave do not fire on iOS/Android touch browsers.
+			const onTouchStart = (e: TouchEvent) => { e.preventDefault(); onEnter() }
+			const onTouchEnd   = (e: TouchEvent) => { e.preventDefault(); onLeave() }
+			span.addEventListener('touchstart', onTouchStart, { passive: false })
+			span.addEventListener('touchend',   onTouchEnd,   { passive: false })
 			cleanups.push(() => {
 				span.removeEventListener('mouseenter', onEnter)
 				span.removeEventListener('mouseleave', onLeave)
+				span.removeEventListener('touchstart', onTouchStart)
+				span.removeEventListener('touchend',   onTouchEnd)
 			})
 		}
 
@@ -163,11 +171,19 @@ export function applyBoldLock(
 
 	element.addEventListener('mouseenter', onEnter)
 	element.addEventListener('mouseleave', onLeave)
+	// Touch support — touchstart activates the element, touchend deactivates it.
+	// mouseenter/mouseleave do not fire on iOS/Android touch browsers.
+	const onTouchStart = (e: TouchEvent) => { e.preventDefault(); onEnter() }
+	const onTouchEnd   = (e: TouchEvent) => { e.preventDefault(); onLeave() }
+	element.addEventListener('touchstart', onTouchStart, { passive: false })
+	element.addEventListener('touchend',   onTouchEnd,   { passive: false })
 
 	// Return a cleanup function that tears down listeners and resets styles
 	return () => {
 		element.removeEventListener('mouseenter', onEnter)
 		element.removeEventListener('mouseleave', onLeave)
+		element.removeEventListener('touchstart', onTouchStart)
+		element.removeEventListener('touchend',   onTouchEnd)
 		element.style.fontVariationSettings = ''
 		element.style.letterSpacing = ''
 		element.style.transition = ''
