@@ -44,6 +44,30 @@ body {
 	/* Prevent browser scroll-anchor algorithm from snapping to 0 when
 	   rag DOM mutations change paragraph heights during gyro/cursor mode */
 	overflow-anchor: none;
+	text-rendering: optimizeLegibility;
+}
+
+/* Hide scrollbars while keeping scroll functionality */
+html {
+	scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+	display: none;
+}
+
+/* Typographic defaults */
+h1, h2, h3 {
+	text-wrap: balance;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+/* Justified prose in explanation sections */
+.prose-grid p:not([class]) {
+	text-align: justify;
+	hyphens: auto;
 }
 
 input[type="range"] {
