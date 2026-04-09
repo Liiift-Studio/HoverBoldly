@@ -90,7 +90,6 @@ export default function Demo() {
 			if (!el) return
 			el.style.display = 'inline-block'
 			el.style.verticalAlign = 'baseline'
-			el.style.overflow = 'hidden'
 			el.style.width = `${widths[i]}px`
 		})
 	}, [dNormal, fontsReady])
@@ -122,7 +121,7 @@ export default function Demo() {
 			</div>
 			<div className="relative pb-8">
 				<p
-					style={{ ...sampleStyle, overflowWrap: 'break-word' }}
+					style={{ ...sampleStyle, overflow: 'hidden' }}
 					onMouseLeave={() => setActiveIdx(DEFAULT_WORD_IDX)}
 				>
 					{WORDS.map((word, i) => (
@@ -145,7 +144,7 @@ export default function Demo() {
 				)}
 				<BeforeAfterToggle active={beforeAfter} onClick={() => setComparing(v => !v)} />
 			</div>
-			<p className="text-xs opacity-50 italic mt-6">One word is bold by default. Move your cursor — or tap on mobile — to target any word. Line endings stay fixed.</p>
+			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>One word is bold by default. Move your cursor — or tap on mobile — to target any word. Line endings stay fixed.</p>
 		</div>
 	)
 }
