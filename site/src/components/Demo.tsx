@@ -46,7 +46,7 @@ function BeforeAfterToggle({ active, onClick }: { active: boolean; onClick: () =
 
 export default function Demo() {
 	const [normalWeight, setNormalWeight] = useState(300)
-	const [hoverWeight, setHoverWeight] = useState(700)
+	const [hoverWeight, setHoverWeight] = useState(800)
 	const [transitionDuration, setTransitionDuration] = useState(150)
 	const [beforeAfter, setComparing] = useState(false)
 	const [activeIdx, setActiveIdx] = useState<number>(DEFAULT_WORD_IDX)
@@ -116,7 +116,7 @@ export default function Demo() {
 	return (
 		<div className="w-full">
 			<div className="grid grid-cols-3 gap-6 mb-8">
-				<Slider label="Normal weight" value={normalWeight} min={100} max={500} step={100} onChange={setNormalWeight} />
+				<Slider label="Normal weight" value={normalWeight} min={300} max={500} step={100} onChange={setNormalWeight} />
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
 				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
 			</div>
