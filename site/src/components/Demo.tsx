@@ -70,7 +70,9 @@ export default function Demo() {
 
 	// Measure and lock each word's layout width at normal weight.
 	// Fixed inline-block width prevents any reflow when a word goes bold.
+	// Skip measurement until fonts are ready — widths measured before font load will be wrong.
 	useLayoutEffect(() => {
+		if (!fontsReady) return
 		const refs = wordRefs.current
 
 		refs.forEach(el => {
