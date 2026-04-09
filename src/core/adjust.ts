@@ -46,6 +46,7 @@ export function calcCompensation(
 	const boldWidth = measureAtWeight(el, boldWeight, canvas)
 	const delta = boldWidth - normalWidth
 	const charCount = (el.textContent ?? '').length
+	if (charCount === 0) return 0
 	if (charCount <= 1) return 0
 	// Distribute the width delta across (charCount - 1) inter-character gaps
 	return -(delta / (charCount - 1))

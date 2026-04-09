@@ -17,7 +17,7 @@ export function useBoldLock(options: BoldLockOptions) {
 		return applyBoldLock(ref.current, options)
 	// Re-run when any relevant option changes
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [options.normalWeight, options.hoverWeight, options.transitionDuration])
+	}, [options.normalWeight, options.hoverWeight, options.transitionDuration, options.mode])
 
 	return ref
 }
