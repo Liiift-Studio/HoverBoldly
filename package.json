@@ -1,7 +1,7 @@
 {
 	"name": "@liiift-studio/hoverboldly",
-	"version": "0.0.22",
-	"description": "Variable font weight hover and bold interactions without layout shift — wght increase with automatic wdth/tracking compensation",
+	"version": "1.0.0",
+	"description": "Variable font weight hover and bold interactions without layout shift \u2014 wght increase with automatic wdth/tracking compensation",
 	"type": "module",
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",
@@ -49,12 +49,17 @@
 	"keywords": [
 		"typography",
 		"variable-font",
+		"font-variation-settings",
 		"hover",
 		"bold",
-		"layout-shift",
+		"no-layout-shift",
 		"wght",
+		"letter-spacing",
+		"canvas",
+		"zero-dependencies",
 		"react",
-		"typescript"
+		"typescript",
+		"css"
 	],
 	"author": "Quinn Keaveney <quinn@liiift.studio>",
 	"license": "MIT",
