@@ -18,6 +18,8 @@ npm install @liiift-studio/hoverboldly
 
 ## Usage
 
+> **Next.js App Router:** this library uses browser APIs. Add `"use client"` to any component file that imports from it.
+
 ### React component
 
 ```tsx
@@ -33,13 +35,14 @@ import { BoldLockText } from '@liiift-studio/hoverboldly'
 ```tsx
 import { useBoldLock } from '@liiift-studio/hoverboldly'
 
+// Inside a React component:
 const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
-<p ref={ref}>{children}</p>
+return <p ref={ref}>{children}</p>
 ```
 
 ### Vanilla JS — interactive bold-lock
 
-`applyBoldLock` attaches mouseenter/mouseleave listeners and returns a cleanup function.
+`applyBoldLock` attaches event listeners and returns a cleanup function.
 
 ```ts
 import { applyBoldLock } from '@liiift-studio/hoverboldly'
@@ -47,18 +50,27 @@ import { applyBoldLock } from '@liiift-studio/hoverboldly'
 const el = document.querySelector('p')
 const cleanup = applyBoldLock(el, { normalWeight: 300, hoverWeight: 700 })
 
-// Later — remove listeners and reset styles:
+// Later — remove all listeners and reset styles:
 cleanup()
 ```
 
 ### Vanilla JS — static bold-shift (CSS `:hover { font-weight: bold }`)
 
-For elements that use CSS `:hover` to apply bold, `applyBoldShift` pre-compensates with letter-spacing so there is no reflow when the style changes.
+For elements that use a CSS rule to apply bold, `applyBoldShift` pre-compensates with letter-spacing so there is no reflow when the style activates.
 
 ```ts
 import { applyBoldShift } from '@liiift-studio/hoverboldly'
 
+const el = document.querySelector('p')
 applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
+```
+
+### TypeScript
+
+```ts
+import type { BoldLockOptions, BoldShiftOptions } from '@liiift-studio/hoverboldly'
+
+const opts: BoldLockOptions = { normalWeight: 300, hoverWeight: 700 }
 ```
 
 ---
@@ -71,8 +83,8 @@ applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
 |--------|---------|-------------|
 | `normalWeight` | computed `font-weight` | wght axis value at rest |
 | `hoverWeight` | `700` | wght axis value on hover |
-| `transitionDuration` | `150` | Transition duration in milliseconds |
-| `mode` | `'element'` | `'element'` — whole element hovers together. `'word'` — individual word hover |
+| `transitionDuration` | `150` | Transition duration in milliseconds. Set to `0` to disable |
+| `mode` | `'element'` | `'element'` — whole element activates together. `'word'` — each word is an independent hover target |
 | `as` | `'p'` | HTML element to render. *(React component only)* |
 
 ### `BoldShiftOptions` (static CSS bold)
@@ -90,7 +102,9 @@ In `'element'` mode, Canvas `measureText` reads the element's full text content 
 
 In `'word'` mode, each word is measured and compensated independently so individual words can hover without affecting their neighbours.
 
-Both modes include touch support (`touchstart`/`touchend`) and keyboard support (`focusin`/`focusout`), so the effect works on mobile and for keyboard navigation. `prefers-reduced-motion: reduce` disables the CSS transition, keeping the weight change instantaneous.
+Both modes respond to mouse, touch (`touchstart`/`touchend`), and keyboard (`focusin`/`focusout`), so the effect works on mobile and for keyboard navigation. `prefers-reduced-motion: reduce` disables the CSS transition, keeping the weight change instantaneous but still happening.
+
+`applyBoldShift` injects a scoped `<style>` rule targeting the element by a generated `data-bold-shift` attribute. There is no automatic cleanup — remove the `<style>` element and `data-bold-shift` attribute manually if needed.
 
 ---
 
@@ -109,7 +123,7 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 - **Axis-agnostic mode** — support hovering any variable font axis, not just `wght`; e.g. `hoverAxis: 'wdth'`, `hoverValue: 125`
 - **ResizeObserver re-measurement** — re-run compensation when the element's font-size changes on resize (e.g. with responsive `clamp()` typography), so the letter-spacing delta stays accurate at all viewport widths
 - **Multi-weight cycles** — hover through a sequence of weights rather than a single toggle (normal → semi-bold → bold → normal)
-- **Bold-shift cleanup** — expose a `removeBoldShift(el)` utility to remove the injected `<style>` rule and `data-bold-shift` attribute added by `applyBoldShift`
+- **Bold-shift cleanup** — expose a `removeBoldShift(el)` utility to remove the injected `<style>` rule and `data-bold-shift` attribute
 - **Transition easing** — expose the CSS `transition-timing-function` as an option alongside `transitionDuration`
 
 ---
