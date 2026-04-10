@@ -72,7 +72,8 @@ applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
 ```ts
 import type { BoldLockOptions, BoldShiftOptions } from '@liiift-studio/hoverboldly'
 
-const opts: BoldLockOptions = { normalWeight: 300, hoverWeight: 700 }
+const lockOpts: BoldLockOptions = { normalWeight: 300, hoverWeight: 700, mode: 'word' }
+const shiftOpts: BoldShiftOptions = { normalWeight: 400, boldWeight: 700 }
 ```
 
 ---
