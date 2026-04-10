@@ -40,6 +40,8 @@ const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 return <p ref={ref}>{children}</p>
 ```
 
+The hook attaches all event listeners on mount and removes them on unmount or when options change.
+
 ### Vanilla JS — interactive bold-lock
 
 `applyBoldLock` attaches event listeners and returns a cleanup function.
