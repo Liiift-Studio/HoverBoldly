@@ -109,6 +109,8 @@ Both modes respond to mouse, touch (`touchstart`/`touchend`), and keyboard (`foc
 
 `applyBoldShift` injects a scoped `<style>` rule targeting the element by a generated `data-bold-shift` attribute. There is no automatic cleanup — remove the `<style>` element and `data-bold-shift` attribute manually if needed.
 
+**Line break safety:** The compensation is applied as `letter-spacing` at the element level (or per-word in `'word'` mode), not via line wrapping. Line breaks are the browser's natural layout and are unaffected by the weight change or its compensation.
+
 ---
 
 ## Dev notes
