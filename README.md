@@ -1,6 +1,6 @@
 # Hover Boldly
 
-Every browser reflts text when you hover to bold — words push down, lines shift. Bold Lock measures the exact width difference per line using Canvas `measureText`, then compensates with letter-spacing so the line never moves. One measurement pass on mount; zero reflow on hover.
+Every browser reflows text when you hover to bold — words push down, lines shift. Bold Lock measures the exact width difference using Canvas `measureText`, then compensates with letter-spacing so the line never moves. One measurement pass on mount; zero reflow on hover.
 
 **[hoverboldly.com](https://hoverboldly.com)** · [npm](https://www.npmjs.com/package/@liiift-studio/hoverboldly) · [GitHub](https://github.com/Liiift-Studio/HoverBoldly)
 
@@ -86,9 +86,11 @@ applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
 
 ## How it works
 
-Canvas `measureText` returns the advance width of each line's text at both the normal and hover weight. The delta becomes a negative letter-spacing applied on `mouseenter`, reversed on `mouseleave` — so the total line width is identical at both weights. The measurement runs once on mount and re-runs on resize via `ResizeObserver`.
+In `'element'` mode, Canvas `measureText` reads the element's full text content at both weights once on mount. The width delta is distributed across character gaps as a negative letter-spacing, applied on `mouseenter` and reversed on `mouseleave` — total line width stays identical at both weights.
 
 In `'word'` mode, each word is measured and compensated independently so individual words can hover without affecting their neighbours.
+
+Both modes include touch support (`touchstart`/`touchend`) and keyboard support (`focusin`/`focusout`), so the effect works on mobile and for keyboard navigation. `prefers-reduced-motion: reduce` disables the CSS transition, keeping the weight change instantaneous.
 
 ---
 
@@ -105,9 +107,9 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 ## Future improvements
 
 - **Axis-agnostic mode** — support hovering any variable font axis, not just `wght`; e.g. `hoverAxis: 'wdth'`, `hoverValue: 125`
-- **Touch support** — `touchstart`/`touchend` events for tap-to-bold on mobile, with a configurable hold duration
+- **ResizeObserver re-measurement** — re-run compensation when the element's font-size changes on resize (e.g. with responsive `clamp()` typography), so the letter-spacing delta stays accurate at all viewport widths
 - **Multi-weight cycles** — hover through a sequence of weights rather than a single toggle (normal → semi-bold → bold → normal)
-- **Per-word independent hover** — track pointer position per word within a paragraph so each word highlights independently, without measuring the whole element
+- **Bold-shift cleanup** — expose a `removeBoldShift(el)` utility to remove the injected `<style>` rule and `data-bold-shift` attribute added by `applyBoldShift`
 - **Transition easing** — expose the CSS `transition-timing-function` as an option alongside `transitionDuration`
 
 ---
