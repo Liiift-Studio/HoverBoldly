@@ -9,5 +9,5 @@ export {
 } from './core/adjust'
 export { useBoldLock } from './react/useBoldLock'
 export { BoldLockText } from './react/BoldLockText'
-export type { BoldLockOptions, BoldShiftOptions } from './core/types'
+export type { BoldLockOptions, BoldShiftOptions, AxisConfig } from './core/types'
 export { BOLD_LOCK_CLASSES } from './core/types'

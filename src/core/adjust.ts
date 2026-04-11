@@ -1,6 +1,6 @@
 // bold-lock/src/core/adjust.ts — framework-agnostic core algorithm
 
-import type { BoldLockOptions, BoldShiftOptions } from './types'
+import type { BoldLockOptions, BoldShiftOptions, AxisConfig } from './types'
 import { BOLD_LOCK_CLASSES } from './types'
 
 /**
@@ -50,6 +50,65 @@ export function calcCompensation(
 	if (charCount <= 1) return 0
 	// Distribute the width delta across (charCount - 1) inter-character gaps
 	return -(delta / (charCount - 1))
+}
+
+/**
+ * Build the hover font-variation-settings map, merging wght and any extra axes.
+ * strength (0–1) interpolates each axis from its rest value to its hover value —
+ * used by proximity mode to scale the effect with cursor distance.
+ */
+function buildHoverFVS(
+	currentFvs: Record<string, number>,
+	normalWeight: number,
+	hoverWeight: number,
+	axes?: Record<string, AxisConfig>,
+	strength = 1,
+): Record<string, number> {
+	const result: Record<string, number> = { ...currentFvs }
+	result.wght = normalWeight + (hoverWeight - normalWeight) * strength
+	if (axes) {
+		for (const [tag, config] of Object.entries(axes)) {
+			const normalVal = config.normal ?? currentFvs[tag] ?? 0
+			result[tag] = normalVal + (config.hover - normalVal) * strength
+		}
+	}
+	return result
+}
+
+/**
+ * Build the rest font-variation-settings map (strength = 0).
+ */
+function buildRestFVS(
+	currentFvs: Record<string, number>,
+	normalWeight: number,
+	axes?: Record<string, AxisConfig>,
+): Record<string, number> {
+	const result: Record<string, number> = { ...currentFvs, wght: normalWeight }
+	if (axes) {
+		for (const [tag, config] of Object.entries(axes)) {
+			result[tag] = config.normal ?? currentFvs[tag] ?? 0
+		}
+	}
+	return result
+}
+
+/** Serialise a font-variation-settings map to a CSS string. */
+function serializeFVS(fvs: Record<string, number>): string {
+	return Object.entries(fvs).map(([k, v]) => `'${k}' ${v}`).join(', ')
+}
+
+/**
+ * Compute the CSS skewX transform string for a falseSlant config at a given strength.
+ * Returns an empty string when the resulting angle is 0 (no transform needed).
+ */
+function buildSkew(
+	falseSlant: { hoverDeg: number; normalDeg?: number } | undefined,
+	strength = 1,
+): string {
+	if (!falseSlant) return ''
+	const normalDeg = falseSlant.normalDeg ?? 0
+	const deg = normalDeg + (falseSlant.hoverDeg - normalDeg) * strength
+	return deg !== 0 ? `skewX(${deg.toFixed(2)}deg)` : ''
 }
 
 /**
@@ -114,16 +173,20 @@ export function applyBoldLock(
 		const cleanups: (() => void)[] = []
 
 		for (const { span, compEm } of wordData) {
+			const savedTransform = span.style.transform
 			const onEnter = () => {
-				const newFvs = { ...currentFvs, wght: hoverWeight }
-				span.style.fontVariationSettings = Object.entries(newFvs).map(([k, v]) => `'${k}' ${v}`).join(', ')
+				span.style.fontVariationSettings = serializeFVS(buildHoverFVS(currentFvs, normalWeight, hoverWeight, options.axes))
 				span.style.letterSpacing = `${compEm}em`
-				span.style.transition = `font-variation-settings ${duration}ms ease, letter-spacing ${duration}ms ease`
+				const skew = buildSkew(options.falseSlant)
+				if (skew) span.style.transform = skew
+				const props = ['font-variation-settings', 'letter-spacing']
+				if (options.falseSlant) props.push('transform')
+				span.style.transition = props.map((p) => `${p} ${duration}ms ease`).join(', ')
 			}
 			const onLeave = () => {
-				const newFvs = { ...currentFvs, wght: normalWeight }
-				span.style.fontVariationSettings = Object.entries(newFvs).map(([k, v]) => `'${k}' ${v}`).join(', ')
+				span.style.fontVariationSettings = serializeFVS(buildRestFVS(currentFvs, normalWeight, options.axes))
 				span.style.letterSpacing = ''
+				if (options.falseSlant) span.style.transform = buildSkew(options.falseSlant, 0) || savedTransform
 			}
 			span.addEventListener('mouseenter', onEnter)
 			span.addEventListener('mouseleave', onLeave)
@@ -255,11 +318,14 @@ export function applyBoldLock(
 					const lineCenterY = rect.top + rect.height / 2
 					const distance = Math.abs(cursorY - lineCenterY)
 					const strength = Math.max(0, 1 - distance / threshold)
-					const weight = normalWeight + (hoverWeight - normalWeight) * strength
-					const newFvs = { ...currentFvs, wght: weight }
-					lineSpan.style.fontVariationSettings = Object.entries(newFvs)
-						.map(([k, v]) => `'${k}' ${v.toFixed(1)}`).join(', ')
+					lineSpan.style.fontVariationSettings = serializeFVS(
+						buildHoverFVS(currentFvs, normalWeight, hoverWeight, options.axes, strength),
+					)
 					lineSpan.style.letterSpacing = `${(lineCompensations[i] * strength).toFixed(5)}em`
+					if (options.falseSlant) {
+						const skew = buildSkew(options.falseSlant, strength)
+						lineSpan.style.transform = skew || ''
+					}
 				})
 			})
 		}
@@ -268,10 +334,9 @@ export function applyBoldLock(
 			cancelAnimationFrame(rafId)
 			rafId = 0
 			lineSpans.forEach((lineSpan) => {
-				const newFvs = { ...currentFvs, wght: normalWeight }
-				lineSpan.style.fontVariationSettings = Object.entries(newFvs)
-					.map(([k, v]) => `'${k}' ${v}`).join(', ')
+				lineSpan.style.fontVariationSettings = serializeFVS(buildRestFVS(currentFvs, normalWeight, options.axes))
 				lineSpan.style.letterSpacing = ''
+				if (options.falseSlant) lineSpan.style.transform = ''
 			})
 		}
 
@@ -292,22 +357,22 @@ export function applyBoldLock(
 	const compensationPx = calcCompensation(element, normalWeight, hoverWeight)
 	const fontSize = parseFloat(getComputedStyle(element).fontSize)
 	const compensationEm = fontSize > 0 ? compensationPx / fontSize : 0
+	const savedTransform = element.style.transform
 
 	const onEnter = () => {
-		const newFvs = { ...currentFvs, wght: hoverWeight }
-		element.style.fontVariationSettings = Object.entries(newFvs)
-			.map(([k, v]) => `'${k}' ${v}`)
-			.join(', ')
+		element.style.fontVariationSettings = serializeFVS(buildHoverFVS(currentFvs, normalWeight, hoverWeight, options.axes))
 		element.style.letterSpacing = `${compensationEm}em`
-		element.style.transition = `font-variation-settings ${duration}ms ease, letter-spacing ${duration}ms ease`
+		const skew = buildSkew(options.falseSlant)
+		if (skew) element.style.transform = skew
+		const props = ['font-variation-settings', 'letter-spacing']
+		if (options.falseSlant) props.push('transform')
+		element.style.transition = props.map((p) => `${p} ${duration}ms ease`).join(', ')
 	}
 
 	const onLeave = () => {
-		const newFvs = { ...currentFvs, wght: normalWeight }
-		element.style.fontVariationSettings = Object.entries(newFvs)
-			.map(([k, v]) => `'${k}' ${v}`)
-			.join(', ')
+		element.style.fontVariationSettings = serializeFVS(buildRestFVS(currentFvs, normalWeight, options.axes))
 		element.style.letterSpacing = ''
+		if (options.falseSlant) element.style.transform = buildSkew(options.falseSlant, 0) || savedTransform
 	}
 
 	element.addEventListener('mouseenter', onEnter)
@@ -334,6 +399,7 @@ export function applyBoldLock(
 		element.style.fontVariationSettings = ''
 		element.style.letterSpacing = ''
 		element.style.transition = ''
+		element.style.transform = savedTransform
 	}
 }
 

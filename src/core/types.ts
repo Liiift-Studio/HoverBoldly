@@ -1,5 +1,13 @@
 // hoverBoldly/src/core/types.ts — types and class constants
 
+/** Configuration for a single additional variable font axis driven on hover */
+export interface AxisConfig {
+	/** Axis value at rest — defaults to the element's current computed value for that axis */
+	normal?: number
+	/** Axis value on hover */
+	hover: number
+}
+
 /** Options for the interactive bold-lock mode (mouseenter/mouseleave) */
 export interface BoldLockOptions {
 	/** wght axis value at rest — defaults to computed font-weight */
@@ -24,6 +32,40 @@ export interface BoldLockOptions {
 	 * to normalWeight. Only used in 'proximity' mode. Default: 120
 	 */
 	proximityThreshold?: number
+	/**
+	 * Additional variable font axes to drive on hover, beyond wght.
+	 * Each key is an OpenType axis tag (e.g. 'slnt', 'wdth', 'ital').
+	 * Applied on top of the element's existing fontVariationSettings.
+	 *
+	 * Letter-spacing compensation is only calculated for the wght axis.
+	 * Axes that change advance widths (e.g. wdth) will cause slight line-length
+	 * changes — use small deltas to keep the effect imperceptible.
+	 *
+	 * In proximity mode each axis is interpolated by cursor-distance strength,
+	 * the same way wght is.
+	 *
+	 * @example
+	 * // Lean forward and condense slightly on hover
+	 * axes: { slnt: { hover: -12 }, wdth: { normal: 100, hover: 95 } }
+	 */
+	axes?: Record<string, AxisConfig>
+	/**
+	 * Fake a slant using CSS transform: skewX() for fonts without a slnt variable axis.
+	 * Does not affect advance widths. In proximity mode the skew is scaled
+	 * proportionally to cursor distance, giving each line its own lean.
+	 *
+	 * Saves and restores the element's original transform on cleanup.
+	 *
+	 * @example
+	 * falseSlant: { hoverDeg: -8 }             // lean forward 8° on hover
+	 * falseSlant: { hoverDeg: 8, normalDeg: 0 } // lean back on hover
+	 */
+	falseSlant?: {
+		/** skewX degrees on hover. Negative = forward lean (italic direction). */
+		hoverDeg: number
+		/** skewX degrees at rest. Defaults to 0 (upright). */
+		normalDeg?: number
+	}
 }
 
 /** Options for the static bold-shift mode (CSS :hover { font-weight: bold }) */
