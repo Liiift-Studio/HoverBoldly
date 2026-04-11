@@ -8,8 +8,22 @@ export interface BoldLockOptions {
 	hoverWeight?: number
 	/** Transition duration in milliseconds — defaults to 150 */
 	transitionDuration?: number
-	/** Compensation mode — defaults to 'element' */
-	mode?: 'element' | 'word'
+	/**
+	 * Interaction mode. Default: 'element'
+	 *
+	 * - **'element'** — the whole element bolds together on mouseenter/mouseleave.
+	 * - **'word'** — each word is an independent hover target.
+	 * - **'proximity'** — weight increases continuously per line based on cursor
+	 *   distance. Lines nearest the cursor are heaviest; weight fades with distance.
+	 *   Width compensation is pre-calculated per line at mount time and scaled
+	 *   proportionally to the weight change.
+	 */
+	mode?: 'element' | 'word' | 'proximity'
+	/**
+	 * Distance in px from a line's center over which weight fades from hoverWeight
+	 * to normalWeight. Only used in 'proximity' mode. Default: 120
+	 */
+	proximityThreshold?: number
 }
 
 /** Options for the static bold-shift mode (CSS :hover { font-weight: bold }) */
@@ -24,4 +38,5 @@ export interface BoldShiftOptions {
 export const BOLD_LOCK_CLASSES = {
 	probe: 'wh-probe',
 	word: 'wh-word',
+	line: 'wh-line',
 } as const

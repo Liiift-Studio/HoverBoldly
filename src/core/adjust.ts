@@ -147,6 +147,145 @@ export function applyBoldLock(
 		}
 	}
 
+	// --- mode: 'proximity' — per-line weight proportional to cursor distance ---
+	if (options.mode === 'proximity') {
+		const originalHTML = element.innerHTML
+		const threshold = options.proximityThreshold ?? 120
+
+		// Step 1: Walk text nodes, wrap each word in a .wh-word span
+		const textNodes: Text[] = []
+		;(function collect(node: Node) {
+			if (node.nodeType === Node.TEXT_NODE) textNodes.push(node as Text)
+			else node.childNodes.forEach(collect)
+		})(element)
+
+		const wordSpans: HTMLElement[] = []
+		for (const textNode of textNodes) {
+			const text = textNode.textContent ?? ''
+			if (!text.trim()) continue
+			const tokens = text.split(/(\S+)/)
+			const fragment = document.createDocumentFragment()
+			for (let i = 0; i < tokens.length; i += 2) {
+				const space = tokens[i]
+				const word = tokens[i + 1]
+				if (!word) continue
+				const isLastWord = tokens[i + 3] === undefined
+				const trailingSpace = isLastWord ? (tokens[i + 2] ?? '') : ''
+				const span = document.createElement('span')
+				span.className = BOLD_LOCK_CLASSES.word
+				span.appendChild(document.createTextNode(space + word + trailingSpace))
+				fragment.appendChild(span)
+				wordSpans.push(span)
+			}
+			textNode.parentNode!.replaceChild(fragment, textNode)
+		}
+
+		if (wordSpans.length === 0) return () => { element.innerHTML = originalHTML }
+
+		// Step 2: Batch-read BCR.top and group words into visual lines
+		const wordTops = wordSpans.map((span) => ({
+			span,
+			top: Math.round(span.getBoundingClientRect().top),
+		}))
+		const lineMap = new Map<number, HTMLElement[]>()
+		for (const { span, top } of wordTops) {
+			if (!lineMap.has(top)) lineMap.set(top, [])
+			lineMap.get(top)!.push(span)
+		}
+		const lineGroups = Array.from(lineMap.entries())
+			.sort(([a], [b]) => a - b)
+			.map(([, spans]) => spans)
+
+		// Step 3: Rebuild innerHTML with .wh-line spans and <br> separators
+		const fragment = document.createDocumentFragment()
+		const lineSpans: HTMLElement[] = []
+
+		lineGroups.forEach((group, lineIndex) => {
+			const lineSpan = document.createElement('span')
+			lineSpan.className = BOLD_LOCK_CLASSES.line
+			lineSpan.style.display = 'inline-block'
+			lineSpan.style.whiteSpace = 'nowrap'
+
+			// Serialise words with ancestor inline context preserved
+			let lineHTML = ''
+			for (const wordSpan of group) {
+				wordSpan.style.display = ''
+				wordSpan.style.whiteSpace = ''
+				let html = wordSpan.outerHTML
+				let ancestor: Element | null = wordSpan.parentElement
+				while (ancestor && ancestor !== element) {
+					const shallow = ancestor.cloneNode(false) as Element
+					const shallowHTML = shallow.outerHTML
+					const split = shallowHTML.lastIndexOf('</')
+					html = shallowHTML.slice(0, split) + html + shallowHTML.slice(split)
+					ancestor = ancestor.parentElement
+				}
+				lineHTML += html
+			}
+			lineSpan.innerHTML = lineHTML
+			fragment.appendChild(lineSpan)
+			lineSpans.push(lineSpan)
+
+			if (lineIndex < lineGroups.length - 1) {
+				const br = document.createElement('br')
+				fragment.appendChild(br)
+			}
+		})
+
+		element.innerHTML = ''
+		element.appendChild(fragment)
+
+		// Step 4: Pre-calculate max compensation per line at mount time
+		// Compensation is scaled linearly by the weight-change strength in the loop.
+		const lineCompensations = lineSpans.map((lineSpan) => {
+			const compPx = calcCompensation(lineSpan, normalWeight, hoverWeight)
+			const fs = parseFloat(getComputedStyle(lineSpan).fontSize)
+			return fs > 0 ? compPx / fs : 0
+		})
+
+		// Step 5: Track pointermove to compute per-line weights
+		let rafId = 0
+		const onPointerMove = (e: PointerEvent) => {
+			if (rafId) return // one update per rAF to throttle mousemove
+			rafId = requestAnimationFrame(() => {
+				rafId = 0
+				const cursorY = e.clientY
+				lineSpans.forEach((lineSpan, i) => {
+					const rect = lineSpan.getBoundingClientRect()
+					const lineCenterY = rect.top + rect.height / 2
+					const distance = Math.abs(cursorY - lineCenterY)
+					const strength = Math.max(0, 1 - distance / threshold)
+					const weight = normalWeight + (hoverWeight - normalWeight) * strength
+					const newFvs = { ...currentFvs, wght: weight }
+					lineSpan.style.fontVariationSettings = Object.entries(newFvs)
+						.map(([k, v]) => `'${k}' ${v.toFixed(1)}`).join(', ')
+					lineSpan.style.letterSpacing = `${(lineCompensations[i] * strength).toFixed(5)}em`
+				})
+			})
+		}
+
+		const onPointerLeave = () => {
+			cancelAnimationFrame(rafId)
+			rafId = 0
+			lineSpans.forEach((lineSpan) => {
+				const newFvs = { ...currentFvs, wght: normalWeight }
+				lineSpan.style.fontVariationSettings = Object.entries(newFvs)
+					.map(([k, v]) => `'${k}' ${v}`).join(', ')
+				lineSpan.style.letterSpacing = ''
+			})
+		}
+
+		element.addEventListener('pointermove', onPointerMove)
+		element.addEventListener('pointerleave', onPointerLeave)
+
+		return () => {
+			cancelAnimationFrame(rafId)
+			element.removeEventListener('pointermove', onPointerMove)
+			element.removeEventListener('pointerleave', onPointerLeave)
+			element.innerHTML = originalHTML
+		}
+	}
+
 	// --- mode: 'element' (default) — whole element hovers together ---
 
 	// Pre-calculate compensation at mount time (single DOM read burst)
