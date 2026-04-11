@@ -9,6 +9,9 @@ const TOOLS = [
 	{ name: "Flood Text",     url: "https://floodtext.com",     id: "floodText"     },
 	{ name: "Typsettle",      url: "https://typsettle.com",     id: "typsettle"     },
 	{ name: "Text Breath",    url: "https://textbreath.com",    id: "textBreath"    },
+	{ name: "Magnet Type",    url: "https://magnettype.com",    id: "magnetType"    },
+	{ name: "Fit Width",      url: "https://fitwidth.com",      id: "fitWidth"      },
+	{ name: "Opsz Stepper",   url: "https://opszstepper.com",   id: "opszStepper"   },
 ]
 
 /** Links to all tools; highlights the current one without a link. */
