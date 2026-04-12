@@ -56,10 +56,17 @@ export default function Demo() {
 	const dDuration = useDeferredValue(transitionDuration)
 
 	const wordRefs = useRef<(HTMLSpanElement | null)[]>(Array(WORDS.length).fill(null))
+	// Holds the pending timeout that resets the bold word after a touch interaction
+	const touchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	const [fontsReady, setFontsReady] = useState(false)
 	useEffect(() => {
 		document.fonts.ready.then(() => setFontsReady(true))
+	}, [])
+
+	// Clear touch reset timeout on unmount to prevent state updates on an unmounted component
+	useEffect(() => () => {
+		if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current)
 	}, [])
 
 	const sampleStyle: React.CSSProperties = {
@@ -130,7 +137,13 @@ export default function Demo() {
 							key={i}
 							ref={el => { wordRefs.current[i] = el }}
 							onMouseEnter={() => setActiveIdx(i)}
-							onTouchStart={() => setActiveIdx(i)}
+							onTouchStart={() => {
+								setActiveIdx(i)
+								if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current)
+								touchTimeoutRef.current = setTimeout(() => {
+									setActiveIdx(DEFAULT_WORD_IDX)
+								}, 2000)
+							}}
 						>
 							{word}
 						</span>
@@ -145,7 +158,7 @@ export default function Demo() {
 				)}
 				<BeforeAfterToggle active={beforeAfter} onClick={() => setComparing(v => !v)} />
 			</div>
-			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>One word is bold by default. Move your cursor — or tap on mobile — to target any word. Line endings stay fixed.</p>
+			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>Move your cursor — or tap on mobile — to bold any word. Line endings stay fixed regardless of weight. On mobile, the bold resets after 2 seconds.</p>
 		</div>
 	)
 }
