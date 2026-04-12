@@ -8,6 +8,9 @@ const SAMPLE = `Hover over this paragraph to feel the weight change. The font gr
 const WORDS = SAMPLE.split(' ')
 const DEFAULT_WORD_IDX = Math.floor(WORDS.length / 2)
 
+// Interval tick duration in ms for dwell progress increments
+const DWELL_TICK_MS = 16
+
 function Slider({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }) {
 	return (
 		<div className="flex flex-col gap-1">
@@ -51,6 +54,16 @@ export default function Demo() {
 	const [beforeAfter, setComparing] = useState(false)
 	const [activeIdx, setActiveIdx] = useState<number>(DEFAULT_WORD_IDX)
 
+	// Dwell mode state
+	const [dwellMode, setDwellMode] = useState(false)
+	const [dwellMs, setDwellMs] = useState(800)
+	const [dwellProgress, setDwellProgress] = useState(0)
+
+	// Tracks which word index is currently accumulating dwell progress
+	const dwellWordIdxRef = useRef<number | null>(null)
+	// Holds the dwell interval handle
+	const dwellIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
 	const dNormal = useDeferredValue(normalWeight)
 	const dHover = useDeferredValue(hoverWeight)
 	const dDuration = useDeferredValue(transitionDuration)
@@ -64,10 +77,42 @@ export default function Demo() {
 		document.fonts.ready.then(() => setFontsReady(true))
 	}, [])
 
-	// Clear touch reset timeout on unmount to prevent state updates on an unmounted component
+	// Clear touch reset timeout and dwell interval on unmount
 	useEffect(() => () => {
 		if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current)
+		if (dwellIntervalRef.current) clearInterval(dwellIntervalRef.current)
 	}, [])
+
+	/** Cancel any running dwell interval and reset progress */
+	function cancelDwell() {
+		if (dwellIntervalRef.current) {
+			clearInterval(dwellIntervalRef.current)
+			dwellIntervalRef.current = null
+		}
+		dwellWordIdxRef.current = null
+		setDwellProgress(0)
+	}
+
+	/** Start dwell timer for word at index i */
+	function startDwell(i: number, currentDwellMs: number) {
+		cancelDwell()
+		dwellWordIdxRef.current = i
+		const increment = DWELL_TICK_MS / currentDwellMs
+		dwellIntervalRef.current = setInterval(() => {
+			setDwellProgress(prev => {
+				const next = prev + increment
+				if (next >= 1) {
+					// Dwell complete — activate word and reset
+					clearInterval(dwellIntervalRef.current!)
+					dwellIntervalRef.current = null
+					dwellWordIdxRef.current = null
+					setActiveIdx(i)
+					return 0
+				}
+				return next
+			})
+		}, DWELL_TICK_MS)
+	}
 
 	const sampleStyle: React.CSSProperties = {
 		fontFamily: "var(--font-merriweather), serif",
@@ -120,6 +165,9 @@ export default function Demo() {
 		})
 	}, [activeIdx, dNormal, dHover, dDuration])
 
+	// Determine which word (if any) is currently accumulating dwell progress
+	const dwellingIdx = dwellWordIdxRef.current
+
 	return (
 		<div className="w-full">
 			<div className="grid grid-cols-3 gap-6 mb-8">
@@ -127,27 +175,92 @@ export default function Demo() {
 				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
 				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
 			</div>
+			<div className="flex items-center gap-4 mb-6">
+				<button
+					onClick={() => {
+						cancelDwell()
+						setDwellMode(v => !v)
+					}}
+					aria-label="Toggle gaze dwell mode"
+					style={{
+						padding: '4px 12px',
+						borderRadius: 4,
+						border: '1px solid currentColor',
+						opacity: dwellMode ? 0.8 : 0.3,
+						background: 'transparent',
+						cursor: 'pointer',
+						fontSize: '0.75rem',
+						letterSpacing: '0.1em',
+						textTransform: 'uppercase',
+						transition: 'opacity 0.15s ease',
+					}}
+				>
+					Dwell
+				</button>
+				{dwellMode && (
+					<div style={{ flex: 1, maxWidth: 220 }}>
+						<Slider label="Dwell (ms)" value={dwellMs} min={200} max={2000} step={100} onChange={setDwellMs} />
+					</div>
+				)}
+			</div>
 			<div className="relative pb-8">
 				<p
 					style={{ ...sampleStyle, overflow: 'hidden' }}
-					onMouseLeave={() => setActiveIdx(DEFAULT_WORD_IDX)}
+					onMouseLeave={() => {
+						if (dwellMode) {
+							cancelDwell()
+						}
+						setActiveIdx(DEFAULT_WORD_IDX)
+					}}
 				>
-					{WORDS.map((word, i) => (
-						<span
-							key={i}
-							ref={el => { wordRefs.current[i] = el }}
-							onMouseEnter={() => setActiveIdx(i)}
-							onTouchStart={() => {
-								setActiveIdx(i)
-								if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current)
-								touchTimeoutRef.current = setTimeout(() => {
-									setActiveIdx(DEFAULT_WORD_IDX)
-								}, 2000)
-							}}
-						>
-							{word}
-						</span>
-					)).reduce<React.ReactNode[]>((acc, span, i) => {
+					{WORDS.map((word, i) => {
+						// Show dwell progress bar on the word currently being dwelled on
+						const isDwelling = dwellMode && dwellingIdx === i && dwellProgress > 0
+						return (
+							<span
+								key={i}
+								ref={el => { wordRefs.current[i] = el }}
+								style={{ position: 'relative' }}
+								onMouseEnter={() => {
+									if (dwellMode) {
+										startDwell(i, dwellMs)
+									} else {
+										setActiveIdx(i)
+									}
+								}}
+								onMouseLeave={() => {
+									if (dwellMode) {
+										cancelDwell()
+									}
+								}}
+								onTouchStart={() => {
+									setActiveIdx(i)
+									if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current)
+									touchTimeoutRef.current = setTimeout(() => {
+										setActiveIdx(DEFAULT_WORD_IDX)
+									}, 2000)
+								}}
+							>
+								{word}
+								{isDwelling && (
+									<span
+										aria-hidden
+										style={{
+											position: 'absolute',
+											bottom: 0,
+											left: 0,
+											width: `${dwellProgress * 100}%`,
+											height: 2,
+											background: 'currentColor',
+											opacity: 0.6,
+											pointerEvents: 'none',
+											borderRadius: 1,
+										}}
+									/>
+								)}
+							</span>
+						)
+					}).reduce<React.ReactNode[]>((acc, span, i) => {
 						acc.push(span)
 						if (i < WORDS.length - 1) acc.push(' ')
 						return acc
@@ -158,7 +271,12 @@ export default function Demo() {
 				)}
 				<BeforeAfterToggle active={beforeAfter} onClick={() => setComparing(v => !v)} />
 			</div>
-			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>Move your cursor — or tap on mobile — to bold any word. Line endings stay fixed regardless of weight. On mobile, the bold resets after 2 seconds.</p>
+			<p className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>
+				{dwellMode
+					? `Gaze dwell mode — hover a word for ${dwellMs}ms to bold it. A progress bar shows fill beneath the word.`
+					: 'Move your cursor — or tap on mobile — to bold any word. Line endings stay fixed regardless of weight. On mobile, the bold resets after 2 seconds.'
+				}
+			</p>
 		</div>
 	)
 }
