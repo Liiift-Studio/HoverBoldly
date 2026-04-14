@@ -14,6 +14,7 @@ const TOOLS = [
 	{ name: "Opsz Stepper",   url: "https://opszstepper.com",   id: "opszStepper"   },
 	{ name: "Stabil Type",    url: "https://stabiltype.com",    id: "stabilType"    },
 	{ name: "Glyph Shaper",   url: "https://glyphshaper.com",   id: "glyphShaper"   },
+	{ name: "Wrap Type",      url: "https://wraptype.com",      id: "wrapType"      },
 ]
 
 /** Links to all tools; highlights the current one without a link. */
