@@ -11,7 +11,11 @@ The files below are **automatically overwritten** by `npm run sync` in the paren
 | File in this repo | Canonical source |
 |---|---|
 | `site/src/components/ToolDirectory.tsx` | `type-tools/shared/components/ToolDirectory.tsx` |
+| `site/src/components/SiteFooter.tsx` | `type-tools/shared/components/SiteFooter.tsx` |
 | `site/src/app/base.css` | `type-tools/shared/styles/base.css` |
+| `site/next.config.ts` | `type-tools/shared/site/next.config.ts` |
+| `site/postcss.config.mjs` | `type-tools/shared/site/postcss.config.mjs` |
+| `vercel.json` | `type-tools/shared/vercel.json` |
 | `.claude/CLAUDE.md` | `type-tools/shared/claude/CLAUDE.md` |
 
 **To change a synced file:** edit the source in `type-tools/shared/`, then run `npm run sync` from the parent repo root. This copies, commits, and pushes all 16 submodules automatically.
@@ -48,6 +52,23 @@ Each tool's `globals.css` should contain only per-tool theme vars. Everything el
 ```
 
 Do not add range input styles, scrollbar resets, or font-face declarations here — those live in `base.css`.
+
+---
+
+## Footer pattern
+
+The footer is rendered by `SiteFooter` (synced). In `page.tsx`, import and use it like this:
+
+```tsx
+import { version } from "../../../package.json"
+import { version as siteVersion } from "../../package.json"
+import SiteFooter from "../components/SiteFooter"
+
+// In JSX:
+<SiteFooter current="toolId" npmVersion={version} siteVersion={siteVersion} />
+```
+
+Do not write a `<footer>` block manually — use `SiteFooter`.
 
 ---
 
