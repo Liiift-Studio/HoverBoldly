@@ -1,6 +1,6 @@
 {
 	"name": "@liiift-studio/hoverboldly",
-	"version": "1.1.6",
+	"version": "1.1.7",
 	"description": "Variable font weight hover and bold interactions without layout shift \u2014 wght increase with automatic wdth/tracking compensation",
 	"type": "module",
 	"main": "dist/index.cjs",
