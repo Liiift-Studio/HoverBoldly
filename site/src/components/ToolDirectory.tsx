@@ -1,19 +1,23 @@
 // Directory of all Liiift type tools — displayed in each tool site footer
 
 const TOOLS = [
-	{ name: "Ragtooth",       url: "https://ragtooth.com",       id: "ragtooth"      },
 	{ name: "Axis Rhythm",    url: "https://axisrhythm.com",    id: "axisRhythm"    },
-	{ name: "Optical Margin", url: "https://opticalmargin.com", id: "opticalMargin" },
-	{ name: "Steady Gray",    url: "https://steadygray.com",    id: "steadyGray"    },
-	{ name: "Hover Boldly",   url: "https://hoverboldly.com",   id: "hoverBoldly"   },
-	{ name: "Flood Text",     url: "https://floodtext.com",     id: "floodText"     },
-	{ name: "Typsettle",      url: "https://typsettle.com",     id: "typsettle"     },
-	{ name: "Text Breath",    url: "https://textbreath.com",    id: "textBreath"    },
-	{ name: "Magnet Type",    url: "https://magnettype.com",    id: "magnetType"    },
+	{ name: "Fit Flush",      url: "https://fit-flush.com",      id: "fitFlush"      },
 	{ name: "Fit Width",      url: "https://fitwidth.com",      id: "fitWidth"      },
-	{ name: "Opsz Stepper",   url: "https://opszstepper.com",   id: "opszStepper"   },
-	{ name: "Stabil Type",    url: "https://stabiltype.com",    id: "stabilType"    },
+	{ name: "Flood Text",     url: "https://floodtext.com",     id: "floodText"     },
 	{ name: "Glyph Shaper",   url: "https://glyphshaper.com",   id: "glyphShaper"   },
+	{ name: "Hover Boldly",   url: "https://hoverboldly.com",   id: "hoverBoldly"   },
+	{ name: "Magnet Type",    url: "https://magnettype.com",    id: "magnetType"    },
+	{ name: "Optical Margin", url: "https://opticalmargin.com", id: "opticalMargin" },
+	{ name: "Opsz Stepper",   url: "https://opszstepper.com",   id: "opszStepper"   },
+	{ name: "Ragtooth",       url: "https://ragtooth.com",      id: "ragtooth"      },
+	{ name: "Scroll Type",    url: "https://scrolltype.com",    id: "scrollType"    },
+	{ name: "Speech Type",    url: "https://speechtype.com",    id: "speechType"    },
+	{ name: "Stabil Type",    url: "https://stabiltype.com",    id: "stabilType"    },
+	{ name: "Steady Gray",    url: "https://steadygray.com",    id: "steadyGray"    },
+	{ name: "Surface Type",   url: "https://surfacetype.com",   id: "surfaceType"   },
+	{ name: "Text Breath",    url: "https://textbreath.com",    id: "textBreath"    },
+	{ name: "Typsettle",      url: "https://typsettle.com",     id: "typsettle"     },
 	{ name: "Wrap Type",      url: "https://wraptype.com",      id: "wrapType"      },
 ]
 
@@ -28,8 +32,6 @@ export default function ToolDirectory({ current }: { current: string }) {
 					<a
 						key={tool.id}
 						href={tool.url}
-						
-						
 						className="opacity-30 hover:opacity-100 transition-opacity text-left"
 					>
 						{tool.name}
