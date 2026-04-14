@@ -12,10 +12,16 @@ The files below are **automatically overwritten** by `npm run sync` in the paren
 |---|---|
 | `site/src/components/ToolDirectory.tsx` | `type-tools/shared/components/ToolDirectory.tsx` |
 | `site/src/components/SiteFooter.tsx` | `type-tools/shared/components/SiteFooter.tsx` |
+| `site/src/components/CodeBlock.tsx` | `type-tools/shared/components/CodeBlock.tsx` |
 | `site/src/app/base.css` | `type-tools/shared/styles/base.css` |
+| `site/public/fonts/Merriweather.woff2` | `type-tools/shared/fonts/Merriweather.woff2` |
+| `site/public/fonts/Merriweather-Italic.woff2` | `type-tools/shared/fonts/Merriweather-Italic.woff2` |
+| `site/public/fonts/inter-300.woff` | `type-tools/shared/fonts/inter-300.woff` |
 | `site/next.config.ts` | `type-tools/shared/site/next.config.ts` |
 | `site/postcss.config.mjs` | `type-tools/shared/site/postcss.config.mjs` |
+| `site/eslint.config.mjs` | `type-tools/shared/site/eslint.config.mjs` |
 | `vercel.json` | `type-tools/shared/vercel.json` |
+| `.gitignore` | `type-tools/shared/gitignore` |
 | `.claude/CLAUDE.md` | `type-tools/shared/claude/CLAUDE.md` |
 
 **To change a synced file:** edit the source in `type-tools/shared/`, then run `npm run sync` from the parent repo root. This copies, commits, and pushes all 16 submodules automatically.
