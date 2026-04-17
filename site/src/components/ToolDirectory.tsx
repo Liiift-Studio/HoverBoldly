@@ -28,7 +28,7 @@ export default function ToolDirectory({ current }: { current: string }) {
 					<>
 						<span>{tool.name}</span>
 						<span className="hidden sm:block" style={{ fontSize: '0.72em', opacity: 0.5, marginTop: '0.18em' }}>{tool.desc}</span>
-						<span className="sm:hidden" style={{ fontSize: '0.72em', opacity: 0.5, marginTop: '0.18em' }}>{tool.short}</span>
+						<span className="sm:hidden" style={{ fontSize: '0.8em', opacity: 0.5, marginTop: '0.18em' }}>{tool.short}</span>
 					</>
 				)
 				return tool.id === current ? (
