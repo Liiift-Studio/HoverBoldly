@@ -20,6 +20,9 @@ build/
 .env.test.local
 .env.production.local
 
+# Vercel
+.vercel/
+
 # Misc
 .DS_Store
 *.pem
