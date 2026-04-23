@@ -14,15 +14,14 @@ interface SiteFooterProps {
 	siteVersion: string
 }
 
+const GA_ID = "G-L6M7RYHFLG"
+
 /** Shared footer: tool directory grid, Liiift link, version numbers, and GA4 analytics. */
 export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFooterProps) {
-	const gaId = process.env.NEXT_PUBLIC_GA_ID
 	return (
 		<footer className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6 pt-8 border-t border-white/10 text-xs">
-			{gaId && <>
-			<Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
-			<Script id="ga-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${gaId}')`}</Script>
-		</>}
+			<Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+			<Script id="ga-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA_ID}')`}</Script>
 			<ToolDirectory current={current} />
 			<hr className="border-white/10" />
 			<div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 opacity-50">
