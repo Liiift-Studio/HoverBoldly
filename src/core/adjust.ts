@@ -3,6 +3,9 @@
 import type { BoldLockOptions, BoldShiftOptions, AxisConfig } from './types'
 import { BOLD_LOCK_CLASSES } from './types'
 
+/** WeakMap storing any active ResizeObserver attached to an element by applyBoldLock. */
+const boldLockObservers = new WeakMap<HTMLElement, ResizeObserver>()
+
 /**
  * Parse an element's computed fontVariationSettings into a key/value map.
  * Returns an empty object when the value is 'normal' or absent.
@@ -388,6 +391,35 @@ export function applyBoldLock(
 	element.addEventListener('focusin',  onEnter)
 	element.addEventListener('focusout', onLeave)
 
+	// Attach a ResizeObserver so compensation stays accurate when font-size changes
+	// (e.g. responsive clamp() typography). Default: enabled.
+	// Only available in element mode — word and proximity modes rebuild innerHTML on
+	// each call anyway, so re-calling applyBoldLock would stack duplicate listeners.
+	if (options.resizeObserver !== false && typeof ResizeObserver !== 'undefined') {
+		// Disconnect any previous observer on this element before attaching a new one
+		boldLockObservers.get(element)?.disconnect()
+		// Track element width to detect font-size changes (a font-size change alters
+		// computed text width even when layout width is constrained externally).
+		let lastOffsetWidth = element.offsetWidth
+		// currentCleanup holds the teardown for the currently-active applyBoldLock call.
+		// We keep a reference here so the observer can tear down the old call before
+		// re-applying — preventing stacked listeners.
+		let currentCleanup: (() => void) | null = null
+		const ro = new ResizeObserver(() => {
+			const newOffsetWidth = element.offsetWidth
+			if (newOffsetWidth === lastOffsetWidth) return
+			lastOffsetWidth = newOffsetWidth
+			// Tear down the previous bold-lock instance (listeners + styles) so we
+			// don't stack event listeners on the same element.
+			if (currentCleanup) currentCleanup()
+			// Re-apply with fresh measurements. Pass resizeObserver: false so the
+			// inner call does not create another nested observer.
+			currentCleanup = applyBoldLock(element, { ...options, resizeObserver: false })
+		})
+		ro.observe(element)
+		boldLockObservers.set(element, ro)
+	}
+
 	// Return a cleanup function that tears down listeners and resets styles
 	return () => {
 		element.removeEventListener('mouseenter', onEnter)
@@ -400,6 +432,8 @@ export function applyBoldLock(
 		element.style.letterSpacing = ''
 		element.style.transition = ''
 		element.style.transform = savedTransform
+		boldLockObservers.get(element)?.disconnect()
+		boldLockObservers.delete(element)
 	}
 }
 
@@ -424,15 +458,35 @@ export function applyBoldShift(element: HTMLElement, options: BoldShiftOptions =
 	element.dataset.boldShiftCompensation = `${compensationEm}em`
 
 	const style = document.createElement('style')
+	style.setAttribute('data-bold-shift', id)
 	style.textContent = `[data-bold-shift="${id}"]:hover { letter-spacing: ${compensationEm}em; }`
 	document.head.appendChild(style)
 }
 
 /**
+ * Remove the bold-shift compensation injected by applyBoldShift.
+ * Finds the scoped <style> element by the element's data-bold-shift ID, removes it,
+ * then strips the data-bold-shift and data-bold-shift-compensation attributes.
+ * Safe to call on elements that were never passed to applyBoldShift — no-op in that case.
+ */
+export function removeBoldShift(element: HTMLElement): void {
+	const id = element.getAttribute('data-bold-shift')
+	if (!id) return
+	// Remove the injected <style> that targets this element's unique ID
+	const style = document.head.querySelector(`style[data-bold-shift="${id}"]`)
+	if (style) style.remove()
+	element.removeAttribute('data-bold-shift')
+	delete element.dataset.boldShiftCompensation
+}
+
+/**
  * Remove bold-lock markup and restore original HTML.
+ * Also disconnects any ResizeObserver attached by applyBoldLock.
  * Kept for backwards compatibility with callers that pass originalHTML.
  */
 export function removeBoldLock(element: HTMLElement, originalHTML: string): void {
+	boldLockObservers.get(element)?.disconnect()
+	boldLockObservers.delete(element)
 	element.innerHTML = originalHTML
 }
 

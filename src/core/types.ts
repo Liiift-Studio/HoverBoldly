@@ -33,6 +33,12 @@ export interface BoldLockOptions {
 	 */
 	proximityThreshold?: number
 	/**
+	 * Re-measure and reapply letter-spacing compensation whenever the element's
+	 * size changes (e.g. when responsive clamp() typography alters font-size at a
+	 * new viewport width). Uses a ResizeObserver internally. Default: true
+	 */
+	resizeObserver?: boolean
+	/**
 	 * Additional variable font axes to drive on hover, beyond wght.
 	 * Each key is an OpenType axis tag (e.g. 'slnt', 'wdth', 'ital').
 	 * Applied on top of the element's existing fontVariationSettings.

@@ -128,9 +128,7 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 ## Future improvements
 
 - **Axis-agnostic mode** — support hovering any variable font axis, not just `wght`; e.g. `hoverAxis: 'wdth'`, `hoverValue: 125`
-- **ResizeObserver re-measurement** — re-run compensation when the element's font-size changes on resize (e.g. with responsive `clamp()` typography), so the letter-spacing delta stays accurate at all viewport widths
 - **Multi-weight cycles** — hover through a sequence of weights rather than a single toggle (normal → semi-bold → bold → normal)
-- **Bold-shift cleanup** — expose a `removeBoldShift(el)` utility to remove the injected `<style>` rule and `data-bold-shift` attribute
 - **Transition easing** — expose the CSS `transition-timing-function` as an option alongside `transitionDuration`
 
 ---

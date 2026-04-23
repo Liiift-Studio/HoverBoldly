@@ -2,6 +2,7 @@
 export {
 	applyBoldLock,
 	applyBoldShift,
+	removeBoldShift,
 	removeBoldLock,
 	getCleanHTML,
 	calcCompensation,
