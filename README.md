@@ -63,10 +63,13 @@ cleanup()
 For elements that use a CSS rule to apply bold, `applyBoldShift` pre-compensates with letter-spacing so there is no reflow when the style activates.
 
 ```ts
-import { applyBoldShift } from '@liiift-studio/hoverboldly'
+import { applyBoldShift, removeBoldShift } from '@liiift-studio/hoverboldly'
 
 const el = document.querySelector('p')
 applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
+
+// Later — remove the injected compensation styles:
+removeBoldShift(el)
 ```
 
 ### TypeScript
@@ -94,10 +97,11 @@ const shiftOpts: BoldShiftOptions = { normalWeight: 400, boldWeight: 700 }
 
 ### `BoldShiftOptions` (static CSS bold)
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `normalWeight` | `400` | wght axis value at rest |
-| `boldWeight` | `700` | wght axis value when bold |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `normalWeight` | `number` | `400` | wght axis value at rest |
+| `boldWeight` | `number` | `700` | wght axis value when bold |
+| `resizeObserver` | `boolean` | `false` | Automatically recalculate compensation when the container is resized (via ResizeObserver) |
 
 ---
 
@@ -109,7 +113,7 @@ In `'word'` mode, each word is measured and compensated independently so individ
 
 Both modes respond to mouse, touch (`touchstart`/`touchend`), and keyboard (`focusin`/`focusout`), so the effect works on mobile and for keyboard navigation. `prefers-reduced-motion: reduce` disables the CSS transition, keeping the weight change instantaneous but still happening.
 
-`applyBoldShift` injects a scoped `<style>` rule targeting the element by a generated `data-bold-shift` attribute. There is no automatic cleanup — remove the `<style>` element and `data-bold-shift` attribute manually if needed.
+`applyBoldShift` injects a scoped `<style>` rule targeting the element by a generated `data-bold-shift` attribute. Call `removeBoldShift(element)` to remove the injected `<style>` element and `data-bold-shift` attribute.
 
 **Line break safety:** The compensation is applied as `letter-spacing` at the element level (or per-word in `'word'` mode), not via line wrapping. Line breaks are the browser's natural layout and are unaffected by the weight change or its compensation.
 
