@@ -4,6 +4,7 @@
 
 import Script from 'next/script'
 import ToolDirectory from "./ToolDirectory"
+import CookieBanner from "./CookieBanner"
 
 interface SiteFooterProps {
 	/** ID of the current tool — passed to ToolDirectory to suppress its own link */
@@ -16,12 +17,23 @@ interface SiteFooterProps {
 
 const GA_ID = "G-L6M7RYHFLG"
 
-/** Shared footer: tool directory grid, Liiift link, version numbers, and GA4 analytics. */
+/** Shared footer: tool directory grid, Liiift link, version numbers, GA4 analytics, and cookie consent. */
 export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFooterProps) {
 	return (
 		<footer className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6 pt-8 border-t border-white/10 text-xs">
-			<Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-			<Script id="ga-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA_ID}')`}</Script>
+			{/*
+			 * GA4 Consent Mode v2: defaults to denied, restores stored choice, then loads GA4.
+			 * Single script ensures consent is set before the external library initialises.
+			 */}
+			<Script id="ga-init" strategy="afterInteractive">{`
+				window.dataLayer=window.dataLayer||[];
+				function gtag(){dataLayer.push(arguments)}
+				gtag('consent','default',{analytics_storage:'denied',wait_for_update:500});
+				try{if(localStorage.getItem('cookie-consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'})}}catch(e){}
+				(function(){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';document.head.appendChild(s)})();
+				gtag('js',new Date());
+				gtag('config','${GA_ID}')
+			`}</Script>
 			<ToolDirectory current={current} />
 			<hr className="border-white/10" />
 			<div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 opacity-50">
@@ -37,6 +49,7 @@ export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFoo
 					npm v{npmVersion} · site v{siteVersion}
 				</span>
 			</div>
+			<CookieBanner />
 		</footer>
 	)
 }
