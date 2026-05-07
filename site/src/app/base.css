@@ -58,6 +58,7 @@ html::-webkit-scrollbar {
 /* Typographic defaults */
 h1, h2, h3 {
 	text-wrap: balance;
+	font-variant-numeric: oldstyle-nums;
 }
 
 p {
@@ -68,6 +69,7 @@ p {
 .prose-grid p:not([class]) {
 	text-align: justify;
 	hyphens: auto;
+	font-variant-numeric: oldstyle-nums;
 }
 
 input[type="range"] {
