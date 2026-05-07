@@ -45,7 +45,7 @@ export default function Home() {
 				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed opacity-70">
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">Why text reflows</p>
-						<p>Bold glyphs are wider. When you change font-weight on hover, every character in the element grows slightly, words push into the next line, and the whole paragraph reflts. It&apos;s jarring and there&apos;s no CSS fix.</p>
+						<p>Bold glyphs are wider. When you change font-weight on hover, every character in the element grows slightly, words push into the next line, and the whole paragraph reflts. It&rsquo;s jarring and there&rsquo;s no CSS fix.</p>
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">How we fix it</p>

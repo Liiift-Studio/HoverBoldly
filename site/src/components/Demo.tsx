@@ -3,7 +3,7 @@
 import { useState, useEffect, useDeferredValue, useLayoutEffect, useRef } from "react"
 import { calcCompensation } from "@liiift-studio/hoverboldly"
 
-const SAMPLE = `Hover over this paragraph to feel the weight change. The font grows heavier as your cursor moves over the text — but look carefully: the line endings stay exactly where they are. No word wraps to the next line. No layout shifts. The trick is measuring the width difference between the two weights using Canvas, then compensating with letter-spacing so the total advance width stays constant. Bold text normally pushes words around. This doesn't.`
+const SAMPLE = `Hover over this paragraph to feel the weight change. The font grows heavier as your cursor moves over the text — but look carefully: the line endings stay exactly where they are. No word wraps to the next line. No layout shifts. The trick is measuring the width difference between the two weights using Canvas, then compensating with letter-spacing so the total advance width stays constant. Bold text normally pushes words around. This doesn’t.`
 
 const WORDS = SAMPLE.split(' ')
 const DEFAULT_WORD_IDX = Math.floor(WORDS.length / 2)
