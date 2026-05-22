@@ -16,6 +16,7 @@ const TOOLS = [
 	{ name: "Steady Gray",    url: "https://steadygray.com",                     id: "steadyGray",    desc: "Equalises optical density across paragraph lines",                     short: "Optical density"        },
 	{ name: "Text Breath",    url: "https://textbreath.com",                     id: "textBreath",    desc: "Oscillates letter-spacing per line in a slow breathing wave",          short: "Breathing spacing"      },
 	{ name: "Typsettle",      url: "https://typsettle.com",                      id: "typsettle",     desc: "Settles per-line tracking from loose to tight after layout",           short: "Tracking settle"        },
+	{ name: "VF Clamp",       url: "https://vfclamp.com",                        id: "vfClamp",       desc: "Restricts a variable font's axis ranges to a specific subfamily scope", short: "Axis range restrict"    },
 	{ name: "Wrap Type",      url: "https://wraptype.com",                       id: "wrapType",      desc: "Wraps live DOM text around any 3D surface with CSS3D and SDF",        short: "3D text wrap"           },
 ]
 
