@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
 		// and imports like ../../../package.json from within the site/ subdirectory.
 		root: path.resolve(__dirname, ".."),
 	},
+	// Prevent Pyodide-based packages from being bundled by webpack — they require
+	// Node.js fs APIs and use dynamic requires that the bundler cannot analyse.
+	// Harmless on tools that don't install these packages.
+	serverExternalPackages: ["@web-alchemy/fonttools", "vf-clamp"],
 }
 
 export default nextConfig
