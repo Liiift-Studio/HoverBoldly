@@ -21,8 +21,8 @@ export default function CookieBanner() {
 	function grant() {
 		try { localStorage.setItem(STORAGE_KEY, 'granted') } catch { /* */ }
 		// Update GA4 Consent Mode v2 for the current session if already loaded
-		if (typeof (window as Window & { gtag?: (...args: unknown[]) => void }).gtag === 'function') {
-			(window as Window & { gtag: (...args: unknown[]) => void }).gtag(
+		if (typeof (window as unknown as Window & { gtag?: (...args: unknown[]) => void }).gtag === 'function') {
+			(window as unknown as Window & { gtag: (...args: unknown[]) => void }).gtag(
 				'consent', 'update', { analytics_storage: 'granted' }
 			)
 		}
