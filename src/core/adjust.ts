@@ -31,7 +31,7 @@ export function measureAtWeight(el: HTMLElement, wght: number, canvas: HTMLCanva
 	// The previous fvsString approach produced invalid CSS (e.g. "'wght' 700 18px Family") which
 	// Canvas silently rejected, causing both weights to measure identically and compensation to be 0.
 	ctx.font = `${wght} ${style.fontSize} ${style.fontFamily}`
-	return ctx.measureText(el.textContent ?? '').width
+	return ctx.measureText((el.textContent ?? '').trim()).width
 }
 
 /**
@@ -48,11 +48,11 @@ export function calcCompensation(
 	const normalWidth = measureAtWeight(el, normalWeight, canvas)
 	const boldWidth = measureAtWeight(el, boldWeight, canvas)
 	const delta = boldWidth - normalWidth
-	const charCount = (el.textContent ?? '').length
+	const charCount = (el.textContent?.trim() ?? '').length
 	if (charCount === 0) return 0
 	if (charCount <= 1) return 0
-	// Distribute the width delta across (charCount - 1) inter-character gaps
-	return -(delta / (charCount - 1))
+	// Distribute the width delta across all charCount positions (letter-spacing applies after every char including the last)
+	return -(delta / charCount)
 }
 
 /**
@@ -156,9 +156,11 @@ export function applyBoldLock(
 				if (!word) continue
 				const isLastWord = tokens[i + 3] === undefined
 				const trailingSpace = isLastWord ? (tokens[i + 2] ?? '') : ''
+				if (space) fragment.appendChild(document.createTextNode(space))
 				const span = document.createElement('span')
 				span.className = BOLD_LOCK_CLASSES.word
-				span.appendChild(document.createTextNode(space + word + trailingSpace))
+				span.style.hyphens = 'none'
+				span.appendChild(document.createTextNode(word + trailingSpace))
 				fragment.appendChild(span)
 				wordSpans.push(span)
 			}
@@ -237,9 +239,11 @@ export function applyBoldLock(
 				if (!word) continue
 				const isLastWord = tokens[i + 3] === undefined
 				const trailingSpace = isLastWord ? (tokens[i + 2] ?? '') : ''
+				if (space) fragment.appendChild(document.createTextNode(space))
 				const span = document.createElement('span')
 				span.className = BOLD_LOCK_CLASSES.word
-				span.appendChild(document.createTextNode(space + word + trailingSpace))
+				span.style.hyphens = 'none'
+				span.appendChild(document.createTextNode(word + trailingSpace))
 				fragment.appendChild(span)
 				wordSpans.push(span)
 			}
