@@ -26,10 +26,40 @@ export const TOOL_IDS = [
 export type ToolId = typeof TOOL_IDS[number]
 
 const GOLDEN_ANGLE = 137.508
-const VIVID_FRACTION = 0.72
-const VIVID_C_FLOOR  = 0.035
-const CLAY_C_BG  = 0.02
-const CLAY_C_BTN = 0.02
+
+// Progressive tier thresholds — append tools freely, system adapts automatically.
+const TIER_1_MAX = 6   // ≤6 tools: flat, one saturation level
+const TIER_2_MAX = 24  // 7–24 tools: vivid/clay alternation (even = vivid, odd = clay)
+// >24 tools (Tier 3): 4 buckets — dark-vivid, dark-clay, light-vivid, light-pastel
+
+// Tier 1 — flat (wide hue spacing makes chroma alone sufficient)
+const T1_L_BG   = 0.14
+const T1_L_BTN  = 0.21
+const T1_FRAC   = 0.88
+
+// Tier 2 vivid (even-index tools)
+const T2V_L_BG   = 0.17
+const T2V_L_BTN  = 0.24
+const T2V_FRAC   = 0.85
+const T2V_FLOOR  = 0.08   // floor for constrained hues (teal/cyan)
+
+// Tier 2 clay (odd-index tools)
+const T2C_L_BG   = 0.10
+const T2C_L_BTN  = 0.17
+const T2C_C_BG   = 0.03
+const T2C_C_BTN  = 0.02
+
+// Tier 3 light-vivid (bucket 2)
+const T3LV_L_BG  = 0.88
+const T3LV_L_BTN = 0.82
+const T3LV_FRAC  = 0.85
+const T3LV_FLOOR = 0.08
+
+// Tier 3 light-pastel (bucket 3)
+const T3LP_L_BG  = 0.93
+const T3LP_L_BTN = 0.87
+const T3LP_C_BG  = 0.06
+const T3LP_C_BTN = 0.04
 
 function hueForIndex(index: number): number {
 	return Math.round((index * GOLDEN_ANGLE) % 360)
@@ -61,17 +91,42 @@ function maxInGamutChroma(L: number, H: number): number {
 	return lo
 }
 
-const isVivid = (index: number) => index % 2 === 0
+function tier(n: number): 1 | 2 | 3 {
+	if (n <= TIER_1_MAX) return 1
+	if (n <= TIER_2_MAX) return 2
+	return 3
+}
 
 /** --background oklch value for a given tool ID. */
 export function toolBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
 	if (index < 0) return 'oklch(0.10 0.05 0)'
 	const H = hueForIndex(index)
-	const C = isVivid(index)
-		? Math.max(VIVID_C_FLOOR, maxInGamutChroma(0.10, H) * VIVID_FRACTION).toFixed(4)
-		: CLAY_C_BG
-	return `oklch(0.10 ${C} ${H})`
+	const t = tier(TOOL_IDS.length)
+
+	if (t === 1) {
+		const C = Math.max(0.03, maxInGamutChroma(T1_L_BG, H) * T1_FRAC).toFixed(4)
+		return `oklch(${T1_L_BG} ${C} ${H})`
+	}
+	if (t === 2) {
+		if (index % 2 === 0) {
+			const C = Math.max(T2V_FLOOR, maxInGamutChroma(T2V_L_BG, H) * T2V_FRAC).toFixed(4)
+			return `oklch(${T2V_L_BG} ${C} ${H})`
+		}
+		return `oklch(${T2C_L_BG} ${T2C_C_BG} ${H})`
+	}
+	// Tier 3 — 4 buckets cycling through dark-vivid, dark-clay, light-vivid, light-pastel
+	const bucket = index % 4
+	if (bucket === 0) {
+		const C = Math.max(T2V_FLOOR, maxInGamutChroma(T2V_L_BG, H) * T2V_FRAC).toFixed(4)
+		return `oklch(${T2V_L_BG} ${C} ${H})`
+	}
+	if (bucket === 1) return `oklch(${T2C_L_BG} ${T2C_C_BG} ${H})`
+	if (bucket === 2) {
+		const C = Math.max(T3LV_FLOOR, maxInGamutChroma(T3LV_L_BG, H) * T3LV_FRAC).toFixed(4)
+		return `oklch(${T3LV_L_BG} ${C} ${H})`
+	}
+	return `oklch(${T3LP_L_BG} ${T3LP_C_BG} ${H})`
 }
 
 /** --btn-bg oklch value for a given tool ID. */
@@ -79,14 +134,39 @@ export function toolBtnBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
 	if (index < 0) return 'oklch(0.18 0.03 0)'
 	const H = hueForIndex(index)
-	const C = isVivid(index)
-		? Math.max(0.05, maxInGamutChroma(0.18, H) * 0.40).toFixed(4)
-		: CLAY_C_BTN
-	return `oklch(0.18 ${C} ${H})`
+	const t = tier(TOOL_IDS.length)
+
+	if (t === 1) {
+		const C = Math.max(0.02, maxInGamutChroma(T1_L_BTN, H) * T1_FRAC * 0.5).toFixed(4)
+		return `oklch(${T1_L_BTN} ${C} ${H})`
+	}
+	if (t === 2) {
+		if (index % 2 === 0) {
+			const C = Math.max(T2V_FLOOR * 0.6, maxInGamutChroma(T2V_L_BTN, H) * 0.45).toFixed(4)
+			return `oklch(${T2V_L_BTN} ${C} ${H})`
+		}
+		return `oklch(${T2C_L_BTN} ${T2C_C_BTN} ${H})`
+	}
+	const bucket = index % 4
+	if (bucket === 0) {
+		const C = Math.max(T2V_FLOOR * 0.6, maxInGamutChroma(T2V_L_BTN, H) * 0.45).toFixed(4)
+		return `oklch(${T2V_L_BTN} ${C} ${H})`
+	}
+	if (bucket === 1) return `oklch(${T2C_L_BTN} ${T2C_C_BTN} ${H})`
+	if (bucket === 2) {
+		const C = Math.max(T3LV_FLOOR * 0.6, maxInGamutChroma(T3LV_L_BTN, H) * 0.55).toFixed(4)
+		return `oklch(${T3LV_L_BTN} ${C} ${H})`
+	}
+	return `oklch(${T3LP_L_BTN} ${T3LP_C_BTN} ${H})`
 }
 
-/** --foreground oklch value for a given tool ID — light, legible, hue-tinted to match. */
+/** --foreground oklch value for a given tool ID — dark for light backgrounds, light for dark. */
 export function toolFg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
-	return `oklch(0.93 0.03 ${index >= 0 ? hueForIndex(index) : 0})`
+	if (index < 0) return 'oklch(0.93 0.03 0)'
+	const H = hueForIndex(index)
+	const t = tier(TOOL_IDS.length)
+	// Tier 3 light buckets need a dark foreground for contrast
+	if (t === 3 && index % 4 >= 2) return `oklch(0.15 0.06 ${H})`
+	return `oklch(0.93 0.03 ${H})`
 }
