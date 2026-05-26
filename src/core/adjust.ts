@@ -509,12 +509,20 @@ export function removeBoldLock(element: HTMLElement, originalHTML: string): void
 
 /**
  * Strip any prior bold-lock markup from an element and return clean innerHTML.
- * Safe to call multiple times — idempotent.
+ * Removes spans injected by applyBoldLock (word and proximity modes use class-based
+ * spans; legacy callers may have used data-bold-lock attributes). Safe to call
+ * multiple times — idempotent.
  */
 export function getCleanHTML(el: HTMLElement): string {
 	const clone = el.cloneNode(true) as HTMLElement
-	clone.querySelectorAll('[data-bold-lock]').forEach((node) => {
-		node.replaceWith(...node.childNodes)
+	// Strip class-based spans (word and proximity modes) and legacy data-attribute spans
+	const selector = `[data-bold-lock], .${BOLD_LOCK_CLASSES.word}, .${BOLD_LOCK_CLASSES.line}`
+	const injected = Array.from(clone.querySelectorAll(selector)).reverse()
+	injected.forEach((node) => {
+		const parent = node.parentNode
+		if (!parent) return
+		while (node.firstChild) parent.insertBefore(node.firstChild, node)
+		parent.removeChild(node)
 	})
 	return clone.innerHTML
 }

@@ -340,6 +340,51 @@ describe('applyBoldLock — extended', () => {
 	})
 })
 
+describe('getCleanHTML — strips class-based spans from word and proximity modes', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: 'normal', fontSize: '16px',
+			fontFamily: 'sans-serif', fontWeight: '400',
+		} as unknown as CSSStyleDeclaration)
+		const realCreate = document.createElement.bind(document)
+		vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+			if (tag === 'canvas') {
+				let call = 0
+				return { getContext: () => ({ font: '', measureText: (text: string) => ({ width: text.length * (++call === 1 ? 8 : 10) }) }) } as unknown as HTMLCanvasElement
+			}
+			return realCreate(tag)
+		})
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('getCleanHTML strips wh-word spans injected by word mode', () => {
+		const el = document.createElement('p')
+		el.textContent = 'Hello world typography'
+		document.body.appendChild(el)
+		// Apply word mode to inject wh-word spans
+		const cleanup = applyBoldLock(el, { mode: 'word', normalWeight: 400, hoverWeight: 700 })
+		// Verify spans are present
+		expect(el.querySelectorAll('.wh-word').length).toBeGreaterThan(0)
+		// getCleanHTML should strip them
+		const cleaned = getCleanHTML(el)
+		expect(cleaned).not.toContain('wh-word')
+		cleanup()
+	})
+
+	it('getCleanHTML result from word-mode element matches original plain text HTML', () => {
+		const el = document.createElement('p')
+		el.textContent = 'Hello world'
+		document.body.appendChild(el)
+		const before = getCleanHTML(el)
+		const cleanup = applyBoldLock(el, { mode: 'word', normalWeight: 400, hoverWeight: 700 })
+		const after = getCleanHTML(el)
+		expect(after).toBe(before)
+		cleanup()
+	})
+})
+
 describe('applyBoldShift — extended', () => {
 	beforeEach(() => {
 		document.body.innerHTML = ''
