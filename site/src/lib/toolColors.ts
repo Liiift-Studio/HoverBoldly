@@ -43,11 +43,11 @@ const T2V_L_BTN  = 0.24
 const T2V_FRAC   = 0.85
 const T2V_FLOOR  = 0.08   // floor for constrained hues (teal/cyan)
 
-// Tier 2 clay (odd-index tools)
-const T2C_L_BG   = 0.10
-const T2C_L_BTN  = 0.17
-const T2C_C_BG   = 0.03
-const T2C_C_BTN  = 0.02
+// Tier 2 clay (odd-index tools) — dark but hue-tinted, visibly darker than vivid
+const T2C_L_BG   = 0.12
+const T2C_L_BTN  = 0.19
+const T2C_FRAC   = 0.38   // fraction of gamut max — enough chroma to distinguish hues
+const T2C_FLOOR  = 0.04   // floor for constrained hues
 
 // Tier 3 light-vivid (bucket 2)
 const T3LV_L_BG  = 0.88
@@ -113,7 +113,8 @@ export function toolBg(toolId: string): string {
 			const C = Math.max(T2V_FLOOR, maxInGamutChroma(T2V_L_BG, H) * T2V_FRAC).toFixed(4)
 			return `oklch(${T2V_L_BG} ${C} ${H})`
 		}
-		return `oklch(${T2C_L_BG} ${T2C_C_BG} ${H})`
+		const C2 = Math.max(T2C_FLOOR, maxInGamutChroma(T2C_L_BG, H) * T2C_FRAC).toFixed(4)
+		return `oklch(${T2C_L_BG} ${C2} ${H})`
 	}
 	// Tier 3 — 4 buckets cycling through dark-vivid, dark-clay, light-vivid, light-pastel
 	const bucket = index % 4
@@ -121,7 +122,10 @@ export function toolBg(toolId: string): string {
 		const C = Math.max(T2V_FLOOR, maxInGamutChroma(T2V_L_BG, H) * T2V_FRAC).toFixed(4)
 		return `oklch(${T2V_L_BG} ${C} ${H})`
 	}
-	if (bucket === 1) return `oklch(${T2C_L_BG} ${T2C_C_BG} ${H})`
+	if (bucket === 1) {
+		const C = Math.max(T2C_FLOOR, maxInGamutChroma(T2C_L_BG, H) * T2C_FRAC).toFixed(4)
+		return `oklch(${T2C_L_BG} ${C} ${H})`
+	}
 	if (bucket === 2) {
 		const C = Math.max(T3LV_FLOOR, maxInGamutChroma(T3LV_L_BG, H) * T3LV_FRAC).toFixed(4)
 		return `oklch(${T3LV_L_BG} ${C} ${H})`
@@ -145,14 +149,18 @@ export function toolBtnBg(toolId: string): string {
 			const C = Math.max(T2V_FLOOR * 0.6, maxInGamutChroma(T2V_L_BTN, H) * 0.45).toFixed(4)
 			return `oklch(${T2V_L_BTN} ${C} ${H})`
 		}
-		return `oklch(${T2C_L_BTN} ${T2C_C_BTN} ${H})`
+		const C2 = Math.max(T2C_FLOOR * 0.6, maxInGamutChroma(T2C_L_BTN, H) * T2C_FRAC * 0.6).toFixed(4)
+		return `oklch(${T2C_L_BTN} ${C2} ${H})`
 	}
 	const bucket = index % 4
 	if (bucket === 0) {
 		const C = Math.max(T2V_FLOOR * 0.6, maxInGamutChroma(T2V_L_BTN, H) * 0.45).toFixed(4)
 		return `oklch(${T2V_L_BTN} ${C} ${H})`
 	}
-	if (bucket === 1) return `oklch(${T2C_L_BTN} ${T2C_C_BTN} ${H})`
+	if (bucket === 1) {
+		const C = Math.max(T2C_FLOOR * 0.6, maxInGamutChroma(T2C_L_BTN, H) * T2C_FRAC * 0.6).toFixed(4)
+		return `oklch(${T2C_L_BTN} ${C} ${H})`
+	}
 	if (bucket === 2) {
 		const C = Math.max(T3LV_FLOOR * 0.6, maxInGamutChroma(T3LV_L_BTN, H) * 0.55).toFixed(4)
 		return `oklch(${T3LV_L_BTN} ${C} ${H})`
