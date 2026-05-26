@@ -1,4 +1,6 @@
-// Lightweight syntax-highlighted code block — keywords bold, strings italic, punctuation muted
+'use client'
+// Lightweight syntax-highlighted code block with clipboard copy — keywords bold, strings italic, punctuation muted
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 const KEYWORDS = new Set([
@@ -49,11 +51,29 @@ function tokenize(code: string): ReactNode[] {
 	return nodes
 }
 
-/** Renders a syntax-highlighted code snippet */
+/** Renders a syntax-highlighted code block with a clipboard copy button */
 export default function CodeBlock({ code }: { code: string }) {
+	const [copied, setCopied] = useState(false)
+
+	function copy() {
+		navigator.clipboard.writeText(code).then(() => {
+			setCopied(true)
+			setTimeout(() => setCopied(false), 1500)
+		})
+	}
+
 	return (
-		<pre className="bg-white/5 rounded p-4 overflow-x-auto text-xs leading-relaxed font-mono">
-			<code>{tokenize(code)}</code>
-		</pre>
+		<div className="relative rounded-lg px-5 py-4 flex items-center gap-6" style={{ background: 'rgba(0,0,0,0.35)' }}>
+			<pre className="overflow-x-auto text-xs leading-relaxed font-mono flex-1">
+				<code>{tokenize(code)}</code>
+			</pre>
+			<button
+				onClick={copy}
+				className="shrink-0 self-start text-xs opacity-30 hover:opacity-80 transition-opacity font-mono pt-px"
+				aria-label="Copy code to clipboard"
+			>
+				{copied ? 'copied' : 'copy'}
+			</button>
+		</div>
 	)
 }

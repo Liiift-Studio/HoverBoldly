@@ -1,4 +1,5 @@
 // Directory of all Liiift type tools — displayed in each tool site footer
+'use client'
 
 const TOOLS = [
 	{ name: "Axis Rhythm",    url: "https://axisrhythm.com",                    id: "axisRhythm",    desc: "Alternates variable font axes per line for rhythmic texture",         short: "Per-line axis rhythm"   },
@@ -20,8 +21,40 @@ const TOOLS = [
 	{ name: "Wrap Type",      url: "https://wraptype.com",                       id: "wrapType",      desc: "Wraps live DOM text around any 3D surface with CSS3D and SDF",        short: "3D text wrap"           },
 ]
 
+/** Background colour for each tool — must match each tool's globals.css --background value. */
+const TOOL_BG: Record<string, string> = {
+	axisRhythm:    'hsl(0, 55%, 10%)',
+	speechType:    'hsl(20, 55%, 9%)',
+	hoverBoldly:   'hsl(40, 60%, 9%)',
+	typsettle:     'hsl(70, 52%, 8%)',
+	textBreath:    'hsl(95, 55%, 9%)',
+	opszStepper:   'hsl(128, 55%, 10%)',
+	opticalMargin: 'hsl(153, 58%, 9%)',
+	floodText:     'hsl(175, 62%, 9%)',
+	vfClamp:       'hsl(193, 55%, 8%)',
+	magnetType:    'hsl(210, 55%, 10%)',
+	fitFlush:      'hsl(225, 55%, 8%)',
+	steadyGray:    'hsl(240, 18%, 9%)',
+	wrapType:      'hsl(255, 55%, 9%)',
+	fitWidth:      'hsl(270, 55%, 10%)',
+	glyphShaper:   'hsl(287, 55%, 9%)',
+	ragtooth:      'hsl(307, 58%, 9%)',
+	stabilType:    'hsl(332, 55%, 9%)',
+}
+
 /** Links to all tools; highlights the current one without a link. */
 export default function ToolDirectory({ current }: { current: string }) {
+	const currentBg = TOOL_BG[current]
+
+	const handleEnter = (toolId: string) => {
+		const bg = TOOL_BG[toolId]
+		if (bg) document.body.style.backgroundColor = bg
+	}
+
+	const handleLeave = () => {
+		if (currentBg) document.body.style.backgroundColor = currentBg
+	}
+
 	return (
 		<nav aria-label="Other type tools" className="grid grid-cols-2 sm:grid-cols-4 gap-x-8" style={{ rowGap: '0.5em' }}>
 			{TOOLS.map((tool) => {
@@ -39,6 +72,8 @@ export default function ToolDirectory({ current }: { current: string }) {
 						key={tool.id}
 						href={tool.url}
 						className="flex flex-col opacity-30 hover:opacity-100 transition-opacity text-left"
+						onMouseEnter={() => handleEnter(tool.id)}
+						onMouseLeave={handleLeave}
 					>
 						{label}
 					</a>

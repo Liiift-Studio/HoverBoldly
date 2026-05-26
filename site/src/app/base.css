@@ -45,6 +45,7 @@ body {
 	   DOM mutations change element heights (gyro/cursor/animation modes) */
 	overflow-anchor: none;
 	text-rendering: optimizeLegibility;
+	transition: background-color 500ms ease;
 }
 
 /* Hide scrollbars while keeping scroll functionality */
