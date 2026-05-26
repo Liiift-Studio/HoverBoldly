@@ -51,7 +51,7 @@ function tokenize(code: string): ReactNode[] {
 	return nodes
 }
 
-/** Renders a syntax-highlighted code block with a clipboard copy button */
+/** Renders a syntax-highlighted code block with an absolute clipboard copy button */
 export default function CodeBlock({ code }: { code: string }) {
 	const [copied, setCopied] = useState(false)
 
@@ -63,16 +63,25 @@ export default function CodeBlock({ code }: { code: string }) {
 	}
 
 	return (
-		<div className="relative rounded-lg px-5 py-4 flex items-center gap-6" style={{ background: 'rgba(0,0,0,0.35)' }}>
-			<pre className="overflow-x-auto text-xs leading-relaxed font-mono flex-1">
+		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(0,0,0,0.35)' }}>
+			<pre className="overflow-x-auto text-xs leading-relaxed font-mono pr-8">
 				<code>{tokenize(code)}</code>
 			</pre>
 			<button
 				onClick={copy}
-				className="shrink-0 self-start text-xs opacity-30 hover:opacity-80 transition-opacity font-mono pt-px"
+				className="absolute top-3 right-3 p-1.5 rounded opacity-20 hover:opacity-70 transition-opacity"
 				aria-label="Copy code to clipboard"
 			>
-				{copied ? 'copied' : 'copy'}
+				{copied ? (
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+						<polyline points="20 6 9 17 4 12" />
+					</svg>
+				) : (
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+						<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+					</svg>
+				)}
 			</button>
 		</div>
 	)

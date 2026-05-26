@@ -24,7 +24,7 @@ The files below are **automatically overwritten** by `npm run sync` in the paren
 | `.gitignore` | `type-tools/shared/gitignore` |
 | `.claude/CLAUDE.md` | `type-tools/shared/claude/CLAUDE.md` |
 
-**To change a synced file:** edit the source in `type-tools/shared/`, then run `npm run sync` from the parent repo root. This copies, commits, and pushes all 16 submodules automatically.
+**To change a synced file:** edit the source in `type-tools/shared/`, then run `npm run sync` from the parent repo root. This copies, commits, and pushes all 17 submodules automatically.
 
 ---
 
@@ -52,12 +52,13 @@ Each tool's `globals.css` should contain only per-tool theme vars. Everything el
 @import "./base.css";
 
 :root {
-	--background: hsl(0, 55%, 10%); /* update hue per tool */
-	--btn-bg: hsl(0, 35%, 18%);
+	--background: oklch(0.10 0.12 275); /* auto-written by npm run sync — do not edit manually */
+	--btn-bg: oklch(0.18 0.07 275);
+	--foreground: oklch(0.93 0.03 275);
 }
 ```
 
-Do not add range input styles, scrollbar resets, or font-face declarations here — those live in `base.css`.
+`--background`, `--btn-bg`, and `--foreground` are computed from the tool's golden-angle hue by `type-tools/scripts/sync-sites.mjs` and written automatically on every sync. Do not edit them manually — changes will be overwritten on the next sync. All other base styles (range input styles, scrollbar resets, font-face declarations) live in `base.css`.
 
 ---
 

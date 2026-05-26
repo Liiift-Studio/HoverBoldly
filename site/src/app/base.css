@@ -47,11 +47,11 @@ body {
 	transition: background-color 500ms ease;
 }
 
-/* Hide scrollbars while keeping scroll functionality */
-html {
+/* Hide all scrollbars while keeping scroll functionality */
+* {
 	scrollbar-width: none;
 }
-html::-webkit-scrollbar {
+*::-webkit-scrollbar {
 	display: none;
 }
 
@@ -65,10 +65,8 @@ p {
 	text-wrap: pretty;
 }
 
-/* Justified prose in explanation sections */
+/* Prose in explanation sections */
 .prose-grid p:not([class]) {
-	text-align: justify;
-	hyphens: auto;
 	font-variant-numeric: oldstyle-nums;
 }
 
