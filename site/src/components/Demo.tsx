@@ -11,11 +11,11 @@ const DEFAULT_WORD_IDX = Math.floor(WORDS.length / 2)
 // Interval tick duration in ms for dwell progress increments
 const DWELL_TICK_MS = 16
 
-function Slider({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }) {
+function Slider({ label, value, min, max, step, onChange, title }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; title?: string }) {
 	return (
 		<div className="flex flex-col gap-1">
 			<span className="text-xs uppercase tracking-widest opacity-50">{label}</span>
-			<input type="range" min={min} max={max} step={step} value={value} aria-label={label} onChange={e => onChange(Number(e.target.value))} onTouchStart={e => e.stopPropagation()} style={{ touchAction: 'none' }} />
+			<input type="range" min={min} max={max} step={step} value={value} aria-label={label} title={title} onChange={e => onChange(Number(e.target.value))} onTouchStart={e => e.stopPropagation()} style={{ touchAction: 'none' }} />
 			<span className="tabular-nums text-xs opacity-50 text-right">{value}</span>
 		</div>
 	)
@@ -171,9 +171,9 @@ export default function Demo() {
 	return (
 		<div className="w-full">
 			<div className="grid grid-cols-3 gap-6 mb-8">
-				<Slider label="Normal weight" value={normalWeight} min={300} max={500} step={100} onChange={setNormalWeight} />
-				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} />
-				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} />
+				<Slider label="Normal weight" value={normalWeight} min={300} max={500} step={100} onChange={setNormalWeight} title="Font weight when the cursor is not hovering over a word" />
+				<Slider label="Hover weight" value={hoverWeight} min={400} max={900} step={100} onChange={setHoverWeight} title="Font weight applied to the word under the cursor — higher values produce heavier, bolder text" />
+				<Slider label="Duration (ms)" value={transitionDuration} min={0} max={500} step={25} onChange={setTransitionDuration} title="How long the weight transition takes in milliseconds — lower values feel snappier, higher values feel more fluid" />
 			</div>
 			<div className="flex items-center gap-4 mb-6">
 				<button
@@ -182,6 +182,7 @@ export default function Demo() {
 						setDwellMode(v => !v)
 					}}
 					aria-label="Toggle gaze dwell mode"
+					title={dwellMode ? 'Disable dwell mode — words bold instantly on hover' : 'Enable dwell mode — a word only bolds after the cursor has hovered over it for the set dwell duration'}
 					style={{
 						padding: '4px 12px',
 						borderRadius: 4,
@@ -199,7 +200,7 @@ export default function Demo() {
 				</button>
 				{dwellMode && (
 					<div style={{ flex: 1, maxWidth: 220 }}>
-						<Slider label="Dwell (ms)" value={dwellMs} min={200} max={2000} step={100} onChange={setDwellMs} />
+						<Slider label="Dwell (ms)" value={dwellMs} min={200} max={2000} step={100} onChange={setDwellMs} title="How long the cursor must hover over a word before it bolds — shorter feels more responsive, longer reduces accidental triggers" />
 					</div>
 				)}
 			</div>
