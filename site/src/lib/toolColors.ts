@@ -25,26 +25,67 @@ export const TOOL_IDS = [
 
 export type ToolId = typeof TOOL_IDS[number]
 
-/** Golden angle in degrees — distributes hues so each new tool fills the largest remaining gap. */
 const GOLDEN_ANGLE = 137.508
+const VIVID_FRACTION = 0.72
+const VIVID_C_FLOOR  = 0.035
+const CLAY_C_BG  = 0.02
+const CLAY_C_BTN = 0.02
 
 function hueForIndex(index: number): number {
 	return Math.round((index * GOLDEN_ANGLE) % 360)
 }
 
+/** OKLab → linear sRGB (Björn Ottosson's matrices). */
+function oklabToLinearSRGB(L: number, a: number, b: number): [number, number, number] {
+	const l_ = L + 0.3963377774 * a + 0.2158037573 * b
+	const m_ = L - 0.1055613458 * a - 0.0638541728 * b
+	const s_ = L - 0.0894841775 * a - 1.2914855480 * b
+	const l = l_ ** 3, m = m_ ** 3, s = s_ ** 3
+	return [
+		+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+	]
+}
+
+/** Binary-search the highest chroma that keeps OKLCH(L, C, H) inside the sRGB cube. */
+function maxInGamutChroma(L: number, H: number): number {
+	const h = H * Math.PI / 180
+	let lo = 0, hi = 0.5
+	for (let i = 0; i < 24; i++) {
+		const mid = (lo + hi) / 2
+		const [r, g, b] = oklabToLinearSRGB(L, mid * Math.cos(h), mid * Math.sin(h))
+		const ok = r >= -0.001 && r <= 1.001 && g >= -0.001 && g <= 1.001 && b >= -0.001 && b <= 1.001
+		if (ok) lo = mid; else hi = mid
+	}
+	return lo
+}
+
+const isVivid = (index: number) => index % 2 === 0
+
 /** --background oklch value for a given tool ID. */
 export function toolBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
-	return `oklch(0.10 0.12 ${index >= 0 ? hueForIndex(index) : 0})`
+	if (index < 0) return 'oklch(0.10 0.05 0)'
+	const H = hueForIndex(index)
+	const C = isVivid(index)
+		? Math.max(VIVID_C_FLOOR, maxInGamutChroma(0.10, H) * VIVID_FRACTION).toFixed(4)
+		: CLAY_C_BG
+	return `oklch(0.10 ${C} ${H})`
 }
 
 /** --btn-bg oklch value for a given tool ID. */
 export function toolBtnBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
-	return `oklch(0.18 0.07 ${index >= 0 ? hueForIndex(index) : 0})`
+	if (index < 0) return 'oklch(0.18 0.03 0)'
+	const H = hueForIndex(index)
+	const C = isVivid(index)
+		? Math.max(0.05, maxInGamutChroma(0.18, H) * 0.40).toFixed(4)
+		: CLAY_C_BTN
+	return `oklch(0.18 ${C} ${H})`
 }
 
-/** --foreground oklch value for a given tool ID — light, legible, hue-tinted to match the background. */
+/** --foreground oklch value for a given tool ID — light, legible, hue-tinted to match. */
 export function toolFg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
 	return `oklch(0.93 0.03 ${index >= 0 ? hueForIndex(index) : 0})`
