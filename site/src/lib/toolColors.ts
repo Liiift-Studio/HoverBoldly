@@ -32,20 +32,20 @@ function hueForIndex(index: number): number {
 	return Math.round((index * GOLDEN_ANGLE) % 360)
 }
 
-/** --background hsl value for a given tool ID. */
+/** --background oklch value for a given tool ID. */
 export function toolBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
-	return `hsl(${index >= 0 ? hueForIndex(index) : 0}, 55%, 9%)`
+	return `oklch(0.10 0.12 ${index >= 0 ? hueForIndex(index) : 0})`
 }
 
-/** --btn-bg hsl value for a given tool ID. */
+/** --btn-bg oklch value for a given tool ID. */
 export function toolBtnBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
-	return `hsl(${index >= 0 ? hueForIndex(index) : 0}, 33%, 17%)`
+	return `oklch(0.18 0.07 ${index >= 0 ? hueForIndex(index) : 0})`
 }
 
-/** --foreground hsl value for a given tool ID — light, legible, hue-tinted to match the background. */
+/** --foreground oklch value for a given tool ID — light, legible, hue-tinted to match the background. */
 export function toolFg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
-	return `hsl(${index >= 0 ? hueForIndex(index) : 0}, 15%, 92%)`
+	return `oklch(0.93 0.03 ${index >= 0 ? hueForIndex(index) : 0})`
 }
