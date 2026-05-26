@@ -25,6 +25,55 @@ export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFoo
 			 * GA4 Consent Mode v2: defaults to denied, restores stored choice, then loads GA4.
 			 * Single script ensures consent is set before the external library initialises.
 			 */}
+			<Script id="tooltip-init" strategy="afterInteractive">{`
+				(function(){
+					var tip=document.createElement('div');
+					tip.style.cssText='position:fixed;z-index:9999;pointer-events:none;background:rgba(0,0,0,0.75);color:#fff;font-size:11px;line-height:1.4;padding:5px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);max-width:220px;opacity:0;transition:opacity 0.12s ease;white-space:normal;backdrop-filter:blur(4px);';
+					document.body.appendChild(tip);
+					var timer=null,current=null,stored=null;
+					function show(el){
+						var rect=el.getBoundingClientRect();
+						var label=el.getAttribute('data-tip')||el.getAttribute('title')||'';
+						if(!label)return;
+						tip.textContent=label;
+						tip.style.opacity='0';
+						tip.style.display='block';
+						var tw=tip.offsetWidth,th=tip.offsetHeight;
+						var cx=rect.left+rect.width/2;
+						var top=rect.top-th-8;
+						if(top<8){top=rect.bottom+8;}
+						var left=cx-tw/2;
+						if(left<8)left=8;
+						if(left+tw>window.innerWidth-8)left=window.innerWidth-8-tw;
+						tip.style.left=left+'px';
+						tip.style.top=top+'px';
+						tip.style.opacity='1';
+					}
+					function hide(){
+						clearTimeout(timer);
+						tip.style.opacity='0';
+						if(current&&stored!==null){current.setAttribute('title',stored);stored=null;}
+						current=null;
+					}
+					document.addEventListener('mouseover',function(e){
+						var el=e.target&&e.target.closest('button[title],input[title]');
+						if(!el||el===current)return;
+						hide();
+						current=el;
+						stored=el.getAttribute('title');
+						el.setAttribute('data-tip',stored);
+						el.removeAttribute('title');
+						timer=setTimeout(function(){show(el);},220);
+					});
+					document.addEventListener('mouseout',function(e){
+						if(!current)return;
+						var to=e.relatedTarget;
+						if(to&&to===current)return;
+						hide();
+					});
+					window.addEventListener('scroll',hide,{passive:true,capture:true});
+				})();
+			`}</Script>
 			<Script id="ga-init" strategy="afterInteractive">{`
 				window.dataLayer=window.dataLayer||[];
 				function gtag(){dataLayer.push(arguments)}
