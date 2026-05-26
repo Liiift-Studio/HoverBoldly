@@ -10,14 +10,32 @@ import type { BoldLockOptions } from '../core/types'
  */
 export function useBoldLock(options: BoldLockOptions) {
 	const ref = useRef<HTMLElement>(null)
+	const cleanupRef = useRef<(() => void) | null>(null)
+	const optionsRef = useRef(options)
+	optionsRef.current = options
 
 	useEffect(() => {
 		if (!ref.current) return
-		// applyBoldLock returns a cleanup function
-		return applyBoldLock(ref.current, options)
+		cleanupRef.current?.()
+		cleanupRef.current = applyBoldLock(ref.current, optionsRef.current)
+		return () => {
+			cleanupRef.current?.()
+			cleanupRef.current = null
+		}
 	// Re-run when any relevant option changes
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [options.normalWeight, options.hoverWeight, options.transitionDuration, options.mode])
+
+	// Re-apply after fonts load — calcCompensation uses Canvas API which measures
+	// the fallback font if called before the variable font finishes loading.
+	useEffect(() => {
+		document.fonts?.ready?.then(() => {
+			if (!ref.current) return
+			cleanupRef.current?.()
+			cleanupRef.current = applyBoldLock(ref.current, optionsRef.current)
+		})
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	return ref
 }

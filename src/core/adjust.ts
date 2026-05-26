@@ -314,16 +314,28 @@ export function applyBoldLock(
 		})
 
 		// Step 5: Track pointermove to compute per-line weights
+		// Position cache — page-relative centres, invalidated on resize so scroll doesn't drift.
+		let lineCentersY: number[] = []
+		let cacheValid = false
+		const cacheRo = new ResizeObserver(() => { cacheValid = false })
+		lineSpans.forEach(span => cacheRo.observe(span))
+
 		let rafId = 0
 		const onPointerMove = (e: PointerEvent) => {
 			if (rafId) return // one update per rAF to throttle mousemove
 			rafId = requestAnimationFrame(() => {
 				rafId = 0
-				const cursorY = e.clientY
+				if (!cacheValid) {
+					const sy = window.scrollY
+					lineCentersY = lineSpans.map(span => {
+						const r = span.getBoundingClientRect()
+						return r.top + r.height / 2 + sy
+					})
+					cacheValid = true
+				}
+				const cursorY = e.clientY + window.scrollY
 				lineSpans.forEach((lineSpan, i) => {
-					const rect = lineSpan.getBoundingClientRect()
-					const lineCenterY = rect.top + rect.height / 2
-					const distance = Math.abs(cursorY - lineCenterY)
+					const distance = Math.abs(cursorY - lineCentersY[i])
 					const strength = Math.max(0, 1 - distance / threshold)
 					lineSpan.style.fontVariationSettings = serializeFVS(
 						buildHoverFVS(currentFvs, normalWeight, hoverWeight, options.axes, strength),
@@ -354,6 +366,7 @@ export function applyBoldLock(
 			cancelAnimationFrame(rafId)
 			element.removeEventListener('pointermove', onPointerMove)
 			element.removeEventListener('pointerleave', onPointerLeave)
+			cacheRo.disconnect()
 			element.innerHTML = originalHTML
 		}
 	}
