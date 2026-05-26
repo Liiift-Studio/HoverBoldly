@@ -63,7 +63,7 @@ export default function CodeBlock({ code }: { code: string }) {
 	}
 
 	return (
-		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(0,0,0,0.35)', outline: '1px solid rgba(255,255,255,0.25)' }}>
+		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(0,0,0,0.35)', outline: '1px solid rgba(255,255,255,0.1)' }}>
 			<pre className="overflow-x-auto text-xs leading-relaxed font-mono pr-8">
 				<code>{tokenize(code)}</code>
 			</pre>
