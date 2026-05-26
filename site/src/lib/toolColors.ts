@@ -43,3 +43,9 @@ export function toolBtnBg(toolId: string): string {
 	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
 	return `hsl(${index >= 0 ? hueForIndex(index) : 0}, 33%, 17%)`
 }
+
+/** --foreground hsl value for a given tool ID — light, legible, hue-tinted to match the background. */
+export function toolFg(toolId: string): string {
+	const index = (TOOL_IDS as readonly string[]).indexOf(toolId)
+	return `hsl(${index >= 0 ? hueForIndex(index) : 0}, 15%, 92%)`
+}
