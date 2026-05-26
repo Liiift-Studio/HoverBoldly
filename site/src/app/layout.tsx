@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 	title: "Hover Boldly — Bold on hover, zero layout shift",
 	icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
 	description:
-		"Hover Boldly lets text go bold on hover without layout shift. It measures the width difference between normal and bold weight using Canvas, then compensates with letter-spacing so the line never moves.",
+		"Bold on hover without layout shift. Measures the width difference between normal and bold weight using Canvas, then compensates with letter-spacing. Zero reflow.",
 	keywords: ["hover boldly", "bold hover", "no layout shift", "variable font", "typography", "TypeScript", "npm"],
 	openGraph: {
 		title: "Hover Boldly — Bold on hover, zero layout shift",

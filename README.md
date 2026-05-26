@@ -92,7 +92,11 @@ const shiftOpts: BoldShiftOptions = { normalWeight: 400, boldWeight: 700 }
 | `normalWeight` | computed `font-weight` | wght axis value at rest |
 | `hoverWeight` | `700` | wght axis value on hover |
 | `transitionDuration` | `150` | Transition duration in milliseconds. Set to `0` to disable |
-| `mode` | `'element'` | `'element'` — whole element activates together. `'word'` — each word is an independent hover target |
+| `mode` | `'element'` | `'element'` — whole element activates together. `'word'` — each word is an independent hover target. `'proximity'` — weight increases continuously per line based on cursor distance |
+| `proximityThreshold` | `120` | Distance in px from a line's centre over which weight fades. Only used in `'proximity'` mode |
+| `resizeObserver` | `true` | Re-measure and reapply letter-spacing compensation when the element resizes |
+| `axes` | `undefined` | Additional variable font axes to drive on hover, e.g. `{ slnt: { hover: -12 }, wdth: { normal: 100, hover: 95 } }`. Letter-spacing compensation is only calculated for `wght` |
+| `falseSlant` | `undefined` | Fake a slant via `transform: skewX()` for fonts without a `slnt` axis. e.g. `{ hoverDeg: -8 }` |
 | `as` | `'p'` | HTML element to render. *(React component only)* |
 
 ### `BoldShiftOptions` (static CSS bold)
@@ -137,4 +141,4 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 
 ---
 
-Current version: 0.1.5
+Current version: 1.1.12
