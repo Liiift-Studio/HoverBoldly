@@ -77,12 +77,13 @@ export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFoo
 			<Script id="ga-init" strategy="afterInteractive">{`
 				window.dataLayer=window.dataLayer||[];
 				function gtag(){dataLayer.push(arguments)}
-				gtag('consent','default',{analytics_storage:'denied',wait_for_update:500});
+				gtag('consent','default',{analytics_storage:'denied',wait_for_update:10000});
 				try{if(localStorage.getItem('cookie-consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'})}}catch(e){}
 				(function(){var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${GA_ID}';document.head.appendChild(s)})();
 				gtag('js',new Date());
 				gtag('config','${GA_ID}')
 			`}</Script>
+			<Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
 			<ToolDirectory current={current} />
 			<hr className="border-white/10" />
 			<div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 opacity-50">
