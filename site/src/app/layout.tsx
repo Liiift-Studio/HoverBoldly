@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 		description: "Text goes bold on hover. The line width stays exactly the same. No reflow, no shift.",
 	},
 	metadataBase: new URL("https://hoverboldly.com"),
+	alternates: { canonical: "https://hoverboldly.com" },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
