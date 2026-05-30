@@ -1,4 +1,4 @@
-// bold-lock/src/core/adjust.ts — framework-agnostic core algorithm
+// hoverBoldly/src/core/adjust.ts — framework-agnostic core algorithm
 
 import type { BoldLockOptions, BoldShiftOptions, AxisConfig } from './types'
 import { BOLD_LOCK_CLASSES } from './types'
@@ -14,7 +14,8 @@ export function getFontVariationSettings(el: HTMLElement): Record<string, number
 	const fvs = getComputedStyle(el).fontVariationSettings
 	if (!fvs || fvs === 'normal') return {}
 	const result: Record<string, number> = {}
-	for (const match of fvs.matchAll(/'([^']+)'\s+([\d.]+)/g)) {
+	// Match both single-quoted and double-quoted axis tags, and allow negative values.
+	for (const match of fvs.matchAll(/['"]([^'"]+)['"]\s+(-?[\d.]+)/g)) {
 		result[match[1]] = parseFloat(match[2])
 	}
 	return result
@@ -26,7 +27,9 @@ export function getFontVariationSettings(el: HTMLElement): Record<string, number
  */
 export function measureAtWeight(el: HTMLElement, wght: number, canvas: HTMLCanvasElement): number {
 	const style = getComputedStyle(el)
-	const ctx = canvas.getContext('2d')!
+	const ctx = canvas.getContext('2d')
+	// Guard against null context — getContext('2d') can return null in some browser environments.
+	if (!ctx) return 0
 	// Use numeric font-weight in the CSS font shorthand — this is valid and Canvas parses it correctly.
 	// The previous fvsString approach produced invalid CSS (e.g. "'wght' 700 18px Family") which
 	// Canvas silently rejected, causing both weights to measure identically and compensation to be 0.
@@ -38,13 +41,16 @@ export function measureAtWeight(el: HTMLElement, wght: number, canvas: HTMLCanva
  * Calculate the compensating letter-spacing (in px) needed to prevent width shift
  * when the element's wght axis moves from normalWeight to boldWeight.
  * Always returns a non-positive number (zero for single-character elements).
+ * An optional shared canvas can be passed to avoid repeated allocation at call sites
+ * that measure many elements (e.g. word mode with one canvas per apply call).
  */
 export function calcCompensation(
 	el: HTMLElement,
 	normalWeight: number,
 	boldWeight: number,
+	sharedCanvas?: HTMLCanvasElement,
 ): number {
-	const canvas = document.createElement('canvas')
+	const canvas = sharedCanvas ?? document.createElement('canvas')
 	const normalWidth = measureAtWeight(el, normalWeight, canvas)
 	const boldWidth = measureAtWeight(el, boldWeight, canvas)
 	const delta = boldWidth - normalWidth
@@ -164,12 +170,13 @@ export function applyBoldLock(
 				fragment.appendChild(span)
 				wordSpans.push(span)
 			}
-			textNode.parentNode!.replaceChild(fragment, textNode)
+			if (textNode.parentNode) textNode.parentNode.replaceChild(fragment, textNode)
 		}
 
-		// Batch all compensation reads before attaching listeners
+		// Batch all compensation reads before attaching listeners, sharing one canvas across all spans.
+		const sharedCanvas = document.createElement('canvas')
 		const wordData = wordSpans.map((span) => {
-			const compPx = calcCompensation(span, normalWeight, hoverWeight)
+			const compPx = calcCompensation(span, normalWeight, hoverWeight, sharedCanvas)
 			const fs = parseFloat(getComputedStyle(span).fontSize)
 			const compEm = fs > 0 ? compPx / fs : 0
 			return { span, compEm }
@@ -195,17 +202,21 @@ export function applyBoldLock(
 			}
 			span.addEventListener('mouseenter', onEnter)
 			span.addEventListener('mouseleave', onLeave)
-			// Touch support — touchstart activates the word, touchend deactivates it.
+			// Touch support — touchstart activates the word, touchend/touchcancel deactivates it.
 			// mouseenter/mouseleave do not fire on iOS/Android touch browsers.
-			const onTouchStart = (e: TouchEvent) => { e.preventDefault(); onEnter() }
-			const onTouchEnd   = (e: TouchEvent) => { e.preventDefault(); onLeave() }
-			span.addEventListener('touchstart', onTouchStart, { passive: false })
-			span.addEventListener('touchend',   onTouchEnd,   { passive: false })
+			// Passive listeners are used so native scroll is not blocked.
+			// touchcancel fires when the OS cancels the gesture (e.g. incoming call, pull-down).
+			const onTouchStart = () => { onEnter() }
+			const onTouchEnd   = () => { onLeave() }
+			span.addEventListener('touchstart',  onTouchStart, { passive: true })
+			span.addEventListener('touchend',    onTouchEnd,   { passive: true })
+			span.addEventListener('touchcancel', onTouchEnd,   { passive: true })
 			cleanups.push(() => {
-				span.removeEventListener('mouseenter', onEnter)
-				span.removeEventListener('mouseleave', onLeave)
-				span.removeEventListener('touchstart', onTouchStart)
-				span.removeEventListener('touchend',   onTouchEnd)
+				span.removeEventListener('mouseenter',  onEnter)
+				span.removeEventListener('mouseleave',  onLeave)
+				span.removeEventListener('touchstart',  onTouchStart)
+				span.removeEventListener('touchend',    onTouchEnd)
+				span.removeEventListener('touchcancel', onTouchEnd)
 			})
 		}
 
@@ -247,7 +258,7 @@ export function applyBoldLock(
 				fragment.appendChild(span)
 				wordSpans.push(span)
 			}
-			textNode.parentNode!.replaceChild(fragment, textNode)
+			if (textNode.parentNode) textNode.parentNode.replaceChild(fragment, textNode)
 		}
 
 		if (wordSpans.length === 0) return () => { element.innerHTML = originalHTML }
@@ -260,7 +271,9 @@ export function applyBoldLock(
 		const lineMap = new Map<number, HTMLElement[]>()
 		for (const { span, top } of wordTops) {
 			if (!lineMap.has(top)) lineMap.set(top, [])
-			lineMap.get(top)!.push(span)
+			// Use a local variable to avoid a non-null assertion — we just set the entry above.
+			const group = lineMap.get(top)
+			if (group) group.push(span)
 		}
 		const lineGroups = Array.from(lineMap.entries())
 			.sort(([a], [b]) => a - b)
@@ -302,8 +315,16 @@ export function applyBoldLock(
 			}
 		})
 
+		// Save scroll before DOM mutation — iOS Safari ignores overflow-anchor: none.
+		const scrollY = window.scrollY
 		element.innerHTML = ''
 		element.appendChild(fragment)
+		// Restore scroll after the mutation in the next frame.
+		requestAnimationFrame(() => {
+			if (Math.abs(window.scrollY - scrollY) > 2) {
+				window.scrollTo({ top: scrollY, behavior: 'instant' })
+			}
+		})
 
 		// Step 4: Pre-calculate max compensation per line at mount time
 		// Compensation is scaled linearly by the weight-change strength in the loop.
@@ -317,14 +338,18 @@ export function applyBoldLock(
 		// Position cache — page-relative centres, invalidated on resize so scroll doesn't drift.
 		let lineCentersY: number[] = []
 		let cacheValid = false
+		// Observe the container element only — one target covers all geometry changes.
 		const cacheRo = new ResizeObserver(() => { cacheValid = false })
-		lineSpans.forEach(span => cacheRo.observe(span))
+		cacheRo.observe(element)
 
-		let rafId = 0
+		let rafPending = false
+		let pendingRafId = 0
 		const onPointerMove = (e: PointerEvent) => {
-			if (rafId) return // one update per rAF to throttle mousemove
-			rafId = requestAnimationFrame(() => {
-				rafId = 0
+			if (rafPending) return // one update per rAF to throttle mousemove
+			rafPending = true
+			pendingRafId = requestAnimationFrame(() => {
+				rafPending = false
+				pendingRafId = 0
 				if (!cacheValid) {
 					const sy = window.scrollY
 					lineCentersY = lineSpans.map(span => {
@@ -350,8 +375,10 @@ export function applyBoldLock(
 		}
 
 		const onPointerLeave = () => {
-			cancelAnimationFrame(rafId)
-			rafId = 0
+			// Cancel any queued RAF so it cannot overwrite the rest state we set below.
+			cancelAnimationFrame(pendingRafId)
+			pendingRafId = 0
+			rafPending = false
 			lineSpans.forEach((lineSpan) => {
 				lineSpan.style.fontVariationSettings = serializeFVS(buildRestFVS(currentFvs, normalWeight, options.axes))
 				lineSpan.style.letterSpacing = ''
@@ -363,7 +390,8 @@ export function applyBoldLock(
 		element.addEventListener('pointerleave', onPointerLeave)
 
 		return () => {
-			cancelAnimationFrame(rafId)
+			cancelAnimationFrame(pendingRafId)
+			rafPending = false
 			element.removeEventListener('pointermove', onPointerMove)
 			element.removeEventListener('pointerleave', onPointerLeave)
 			cacheRo.disconnect()
@@ -378,15 +406,20 @@ export function applyBoldLock(
 	const fontSize = parseFloat(getComputedStyle(element).fontSize)
 	const compensationEm = fontSize > 0 ? compensationPx / fontSize : 0
 	const savedTransform = element.style.transform
+	// Save any pre-existing inline FVS so cleanup can restore it rather than clearing to ''.
+	const savedFontVariationSettings = element.style.fontVariationSettings
+
+	// Compute the transition string once at setup — it never changes between hovers.
+	const transitionProps = ['font-variation-settings', 'letter-spacing']
+	if (options.falseSlant) transitionProps.push('transform')
+	const transitionValue = transitionProps.map((p) => `${p} ${duration}ms ease`).join(', ')
 
 	const onEnter = () => {
 		element.style.fontVariationSettings = serializeFVS(buildHoverFVS(currentFvs, normalWeight, hoverWeight, options.axes))
 		element.style.letterSpacing = `${compensationEm}em`
 		const skew = buildSkew(options.falseSlant)
 		if (skew) element.style.transform = skew
-		const props = ['font-variation-settings', 'letter-spacing']
-		if (options.falseSlant) props.push('transform')
-		element.style.transition = props.map((p) => `${p} ${duration}ms ease`).join(', ')
+		element.style.transition = transitionValue
 	}
 
 	const onLeave = () => {
@@ -397,12 +430,13 @@ export function applyBoldLock(
 
 	element.addEventListener('mouseenter', onEnter)
 	element.addEventListener('mouseleave', onLeave)
-	// Touch support — touchstart activates the element, touchend deactivates it.
-	// mouseenter/mouseleave do not fire on iOS/Android touch browsers.
-	const onTouchStart = (e: TouchEvent) => { e.preventDefault(); onEnter() }
-	const onTouchEnd   = (e: TouchEvent) => { e.preventDefault(); onLeave() }
-	element.addEventListener('touchstart', onTouchStart, { passive: false })
-	element.addEventListener('touchend',   onTouchEnd,   { passive: false })
+	// Touch support — passive listeners so native scroll is not blocked.
+	// touchcancel fires when the OS cancels the gesture (incoming call, pull-down, etc.).
+	const onTouchStart = () => { onEnter() }
+	const onTouchEnd   = () => { onLeave() }
+	element.addEventListener('touchstart',  onTouchStart, { passive: true })
+	element.addEventListener('touchend',    onTouchEnd,   { passive: true })
+	element.addEventListener('touchcancel', onTouchEnd,   { passive: true })
 	// Keyboard support — focusin/focusout fire when the element or any descendant
 	// (e.g. a link inside the paragraph) gains or loses keyboard focus.
 	element.addEventListener('focusin',  onEnter)
@@ -412,21 +446,21 @@ export function applyBoldLock(
 	// (e.g. responsive clamp() typography). Default: enabled.
 	// Only available in element mode — word and proximity modes rebuild innerHTML on
 	// each call anyway, so re-calling applyBoldLock would stack duplicate listeners.
+	let currentCleanup: (() => void) | null = null
 	if (options.resizeObserver !== false && typeof ResizeObserver !== 'undefined') {
-		// Disconnect any previous observer on this element before attaching a new one
+		// Disconnect any previous observer on this element before attaching a new one.
 		boldLockObservers.get(element)?.disconnect()
 		// Track element width to detect font-size changes (a font-size change alters
 		// computed text width even when layout width is constrained externally).
 		let lastOffsetWidth = element.offsetWidth
-		// currentCleanup holds the teardown for the currently-active applyBoldLock call.
+		// currentCleanup holds the teardown for the currently-active inner applyBoldLock call.
 		// We keep a reference here so the observer can tear down the old call before
 		// re-applying — preventing stacked listeners.
-		let currentCleanup: (() => void) | null = null
 		const ro = new ResizeObserver(() => {
 			const newOffsetWidth = element.offsetWidth
 			if (newOffsetWidth === lastOffsetWidth) return
 			lastOffsetWidth = newOffsetWidth
-			// Tear down the previous bold-lock instance (listeners + styles) so we
+			// Tear down the previous inner bold-lock instance (listeners + styles) so we
 			// don't stack event listeners on the same element.
 			if (currentCleanup) currentCleanup()
 			// Re-apply with fresh measurements. Pass resizeObserver: false so the
@@ -434,18 +468,25 @@ export function applyBoldLock(
 			currentCleanup = applyBoldLock(element, { ...options, resizeObserver: false })
 		})
 		ro.observe(element)
+		// Store only the outer ro in the WeakMap; inner calls pass resizeObserver:false
+		// so they never write to boldLockObservers, keeping this entry stable.
 		boldLockObservers.set(element, ro)
 	}
 
-	// Return a cleanup function that tears down listeners and resets styles
+	// Return a cleanup function that tears down listeners and resets styles.
+	// Also calls currentCleanup so that any inner re-apply instance is torn down too,
+	// clearing inline styles that were set while the cursor was over the element.
 	return () => {
 		element.removeEventListener('mouseenter', onEnter)
 		element.removeEventListener('mouseleave', onLeave)
-		element.removeEventListener('touchstart', onTouchStart)
-		element.removeEventListener('touchend',   onTouchEnd)
+		element.removeEventListener('touchstart',  onTouchStart)
+		element.removeEventListener('touchend',    onTouchEnd)
+		element.removeEventListener('touchcancel', onTouchEnd)
 		element.removeEventListener('focusin',  onEnter)
 		element.removeEventListener('focusout', onLeave)
-		element.style.fontVariationSettings = ''
+		// Tear down the inner instance if there is one (keeps styles clean).
+		if (currentCleanup) { currentCleanup(); currentCleanup = null }
+		element.style.fontVariationSettings = savedFontVariationSettings
 		element.style.letterSpacing = ''
 		element.style.transition = ''
 		element.style.transform = savedTransform
@@ -462,6 +503,10 @@ export function applyBoldLock(
 export function applyBoldShift(element: HTMLElement, options: BoldShiftOptions = {}): void {
 	if (typeof window === 'undefined') return
 
+	// Remove any previous bold-shift applied to this element before re-applying,
+	// so repeated calls do not accumulate orphaned <style> nodes in <head>.
+	removeBoldShift(element)
+
 	const normalWeight = options.normalWeight ?? 400
 	const boldWeight = options.boldWeight ?? 700
 
@@ -469,14 +514,19 @@ export function applyBoldShift(element: HTMLElement, options: BoldShiftOptions =
 	const fontSize = parseFloat(getComputedStyle(element).fontSize)
 	const compensationEm = fontSize > 0 ? compensationPx / fontSize : 0
 
-	// Assign a stable unique ID so the scoped rule targets only this element
+	// Assign a stable unique ID so the scoped rule targets only this element.
 	const id = `bold-shift-${Math.random().toString(36).slice(2, 8)}`
 	element.setAttribute('data-bold-shift', id)
 	element.dataset.boldShiftCompensation = `${compensationEm}em`
 
+	// Include :focus-within so keyboard users also receive the compensation when
+	// the element or a descendant is focused (e.g. a link inside a nav item).
 	const style = document.createElement('style')
 	style.setAttribute('data-bold-shift', id)
-	style.textContent = `[data-bold-shift="${id}"]:hover { letter-spacing: ${compensationEm}em; }`
+	style.textContent = [
+		`[data-bold-shift="${id}"]:hover { letter-spacing: ${compensationEm}em; }`,
+		`[data-bold-shift="${id}"]:focus-within { letter-spacing: ${compensationEm}em; }`,
+	].join('\n')
 	document.head.appendChild(style)
 }
 
@@ -499,7 +549,10 @@ export function removeBoldShift(element: HTMLElement): void {
 /**
  * Remove bold-lock markup and restore original HTML.
  * Also disconnects any ResizeObserver attached by applyBoldLock.
- * Kept for backwards compatibility with callers that pass originalHTML.
+ *
+ * @deprecated Prefer calling the cleanup closure returned by `applyBoldLock` directly.
+ * This function exists for backwards compatibility with callers that stored `originalHTML`
+ * separately. New code should use: `const cleanup = applyBoldLock(el, opts); cleanup()`.
  */
 export function removeBoldLock(element: HTMLElement, originalHTML: string): void {
 	boldLockObservers.get(element)?.disconnect()

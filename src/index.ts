@@ -1,4 +1,4 @@
-// bold-lock/src/index.ts — public API exports
+// hoverBoldly/src/index.ts — public API exports
 export {
 	applyBoldLock,
 	applyBoldShift,

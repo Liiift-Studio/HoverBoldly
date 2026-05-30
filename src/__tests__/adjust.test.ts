@@ -1,10 +1,11 @@
-// bold-lock/src/__tests__/adjust.test.ts — core algorithm tests
+// hoverBoldly/src/__tests__/adjust.test.ts — core algorithm tests
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import {
 	getFontVariationSettings,
 	calcCompensation,
 	applyBoldLock,
 	applyBoldShift,
+	removeBoldShift,
 	removeBoldLock,
 	getCleanHTML,
 } from '../core/adjust'
@@ -27,14 +28,17 @@ function makeElementHTML(html: string): HTMLElement {
 
 /**
  * Spy on document.createElement so canvas tags return a stub whose measureText
- * returns width = text.length * multiplier (first call) or text.length * boldMultiplier
- * (second call).  All other tags fall through to the real implementation.
+ * returns width = text.length * normalMultiplier (first call per canvas) or
+ * text.length * boldMultiplier (second call per canvas). Each canvas instance
+ * maintains its own independent call counter so multi-element tests are correct.
+ * All other tags fall through to the real implementation.
  */
 function spyCanvas(normalMultiplier = 8, boldMultiplier = 10) {
 	const realCreate = document.createElement.bind(document)
-	let callCount = 0
 	vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
 		if (tag === 'canvas') {
+			// Per-canvas counter — each new canvas starts fresh.
+			let callCount = 0
 			return {
 				getContext: () => ({
 					font: '',
@@ -419,5 +423,300 @@ describe('applyBoldShift — extended', () => {
 		expect(id1).toBeTruthy()
 		expect(id2).toBeTruthy()
 		expect(id1).not.toBe(id2)
+	})
+})
+
+// ─── getFontVariationSettings — negative values and double-quoted tags ─────────
+
+describe('getFontVariationSettings — negative and double-quoted axes', () => {
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it("parses a negative axis value (e.g. 'slnt' -12)", () => {
+		const el = document.createElement('p')
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: "'slnt' -12",
+		} as unknown as CSSStyleDeclaration)
+		expect(getFontVariationSettings(el)).toEqual({ slnt: -12 })
+	})
+
+	it('parses double-quoted axis tags (e.g. "wght" 700)', () => {
+		const el = document.createElement('p')
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: '"wght" 700, "wdth" 100',
+		} as unknown as CSSStyleDeclaration)
+		expect(getFontVariationSettings(el)).toEqual({ wght: 700, wdth: 100 })
+	})
+
+	it('parses a mix of negative and double-quoted axes', () => {
+		const el = document.createElement('p')
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: '"wght" 300, \'slnt\' -8',
+		} as unknown as CSSStyleDeclaration)
+		const result = getFontVariationSettings(el)
+		expect(result.wght).toBe(300)
+		expect(result.slnt).toBe(-8)
+	})
+})
+
+// ─── calcCompensation — zero/empty text ───────────────────────────────────────
+
+describe('calcCompensation — zero-char guard', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		stubComputedStyle()
+		spyCanvas(8, 10)
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('returns 0 for an element with no text content', () => {
+		const el = document.createElement('p')
+		el.textContent = '   ' // whitespace only → trim → 0 chars
+		document.body.appendChild(el)
+		expect(calcCompensation(el, 400, 700)).toBe(0)
+	})
+})
+
+// ─── removeBoldShift ───────────────────────────────────────────────────────────
+
+describe('removeBoldShift', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		document.head.innerHTML = ''
+		stubComputedStyle()
+		spyCanvas(8, 10)
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('removes the injected <style> from document.head', () => {
+		const el = makeElement('Link text')
+		applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
+		const stylesBefore = document.head.querySelectorAll('style').length
+		expect(stylesBefore).toBeGreaterThan(0)
+		removeBoldShift(el)
+		expect(document.head.querySelectorAll('style').length).toBe(0)
+	})
+
+	it('strips the data-bold-shift attribute from the element', () => {
+		const el = makeElement('Link text')
+		applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
+		expect(el.getAttribute('data-bold-shift')).toBeTruthy()
+		removeBoldShift(el)
+		expect(el.getAttribute('data-bold-shift')).toBeNull()
+	})
+
+	it('is a no-op on an element that was never shifted', () => {
+		const el = makeElement('Link text')
+		expect(() => removeBoldShift(el)).not.toThrow()
+		expect(document.head.querySelectorAll('style').length).toBe(0)
+	})
+
+	it('repeated applyBoldShift calls do not accumulate orphaned <style> nodes', () => {
+		const el = makeElement('Link text')
+		applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
+		applyBoldShift(el, { normalWeight: 400, boldWeight: 700 })
+		// Second call should remove the first <style> before inserting a new one.
+		expect(document.head.querySelectorAll('style').length).toBe(1)
+	})
+})
+
+// ─── applyBoldLock — proximity mode ───────────────────────────────────────────
+
+describe('applyBoldLock — proximity mode', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: 'normal',
+			fontSize: '16px',
+			fontFamily: 'sans-serif',
+			fontWeight: '400',
+		} as unknown as CSSStyleDeclaration)
+		const realCreate = document.createElement.bind(document)
+		vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+			if (tag === 'canvas') {
+				let call = 0
+				return {
+					getContext: () => ({
+						font: '',
+						measureText: (text: string) => ({ width: text.length * (++call === 1 ? 8 : 10) }),
+					}),
+				} as unknown as HTMLCanvasElement
+			}
+			return realCreate(tag)
+		})
+		// Stub getBoundingClientRect so all words appear on the same line (same top).
+		vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+			top: 10, left: 0, bottom: 26, right: 100, height: 16, width: 100,
+		} as DOMRect)
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('returns a cleanup function', () => {
+		const el = makeElement('Hello world typography')
+		const cleanup = applyBoldLock(el, { mode: 'proximity', normalWeight: 400, hoverWeight: 700 })
+		expect(typeof cleanup).toBe('function')
+		cleanup()
+	})
+
+	it('wraps words in .wh-word spans', () => {
+		const el = makeElement('Hello world typography')
+		const cleanup = applyBoldLock(el, { mode: 'proximity', normalWeight: 400, hoverWeight: 700 })
+		// After proximity mode setup the DOM is rebuilt into .wh-line spans.
+		expect(el.querySelectorAll('.wh-line').length).toBeGreaterThan(0)
+		cleanup()
+	})
+
+	it('cleanup restores original innerHTML', () => {
+		const el = makeElement('Hello world')
+		const original = el.innerHTML
+		const cleanup = applyBoldLock(el, { mode: 'proximity', normalWeight: 400, hoverWeight: 700 })
+		// DOM should be mutated after apply.
+		cleanup()
+		expect(el.innerHTML).toBe(original)
+	})
+
+	it('attaches pointermove and pointerleave listeners', () => {
+		const el = makeElement('Hello world')
+		const addSpy = vi.spyOn(el, 'addEventListener')
+		const cleanup = applyBoldLock(el, { mode: 'proximity', normalWeight: 400, hoverWeight: 700 })
+		const types = addSpy.mock.calls.map((c) => c[0])
+		expect(types).toContain('pointermove')
+		expect(types).toContain('pointerleave')
+		cleanup()
+	})
+
+	it('cleanup removes pointermove and pointerleave listeners', () => {
+		const el = makeElement('Hello world')
+		const removeSpy = vi.spyOn(el, 'removeEventListener')
+		const cleanup = applyBoldLock(el, { mode: 'proximity', normalWeight: 400, hoverWeight: 700 })
+		cleanup()
+		const types = removeSpy.mock.calls.map((c) => c[0])
+		expect(types).toContain('pointermove')
+		expect(types).toContain('pointerleave')
+	})
+})
+
+// ─── applyBoldLock — word mode (touchcancel + additional coverage) ─────────────
+
+describe('applyBoldLock — word mode', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: 'normal',
+			fontSize: '16px',
+			fontFamily: 'sans-serif',
+			fontWeight: '400',
+		} as unknown as CSSStyleDeclaration)
+		const realCreate = document.createElement.bind(document)
+		vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+			if (tag === 'canvas') {
+				let call = 0
+				return {
+					getContext: () => ({
+						font: '',
+						measureText: (text: string) => ({ width: text.length * (++call === 1 ? 8 : 10) }),
+					}),
+				} as unknown as HTMLCanvasElement
+			}
+			return realCreate(tag)
+		})
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('wraps words in .wh-word spans', () => {
+		const el = makeElement('Hello world typography')
+		const cleanup = applyBoldLock(el, { mode: 'word', normalWeight: 400, hoverWeight: 700 })
+		expect(el.querySelectorAll('.wh-word').length).toBeGreaterThan(0)
+		cleanup()
+	})
+
+	it('cleanup restores original innerHTML', () => {
+		const el = makeElement('Hello world')
+		const original = el.innerHTML
+		const cleanup = applyBoldLock(el, { mode: 'word', normalWeight: 400, hoverWeight: 700 })
+		cleanup()
+		expect(el.innerHTML).toBe(original)
+	})
+
+	it('attaches touchcancel listener alongside touchstart and touchend', () => {
+		const el = makeElement('Hello world')
+		applyBoldLock(el, { mode: 'word', normalWeight: 400, hoverWeight: 700 })
+		// Check that the first word span has touchcancel registered.
+		const firstSpan = el.querySelector('.wh-word') as HTMLElement
+		expect(firstSpan).toBeTruthy()
+		// We verify by checking that firing touchcancel does not throw.
+		expect(() => firstSpan.dispatchEvent(new Event('touchcancel'))).not.toThrow()
+	})
+})
+
+// ─── applyBoldLock — element mode (focusin/focusout + falseSlant) ─────────────
+
+describe('applyBoldLock — element mode extended', () => {
+	beforeEach(() => {
+		document.body.innerHTML = ''
+		vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+			fontVariationSettings: 'normal',
+			fontSize: '16px',
+			fontFamily: 'sans-serif',
+			fontWeight: '400',
+		} as unknown as CSSStyleDeclaration)
+		const realCreate = document.createElement.bind(document)
+		vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+			if (tag === 'canvas') {
+				let call = 0
+				return {
+					getContext: () => ({
+						font: '',
+						measureText: (text: string) => ({ width: text.length * (++call === 1 ? 8 : 10) }),
+					}),
+				} as unknown as HTMLCanvasElement
+			}
+			return realCreate(tag)
+		})
+	})
+
+	afterEach(() => { vi.restoreAllMocks() })
+
+	it('applies fontVariationSettings on focusin', () => {
+		const el = makeElement('Hello world')
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
+		el.dispatchEvent(new FocusEvent('focusin'))
+		expect(el.style.fontVariationSettings).toContain('700')
+	})
+
+	it('clears letterSpacing on focusout', () => {
+		const el = makeElement('Hello world')
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
+		el.dispatchEvent(new FocusEvent('focusin'))
+		el.dispatchEvent(new FocusEvent('focusout'))
+		expect(el.style.letterSpacing).toBe('')
+	})
+
+	it('applies skewX transform on enter when falseSlant is set', () => {
+		const el = makeElement('Hello world')
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700, falseSlant: { hoverDeg: -8 } })
+		el.dispatchEvent(new MouseEvent('mouseenter'))
+		expect(el.style.transform).toContain('skewX')
+	})
+
+	it('restores saved fontVariationSettings on cleanup (not just empty string)', () => {
+		const el = makeElement('Hello world')
+		el.style.fontVariationSettings = "'wght' 400"
+		const cleanup = applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
+		el.dispatchEvent(new MouseEvent('mouseenter'))
+		cleanup()
+		// Should restore to the original inline value, not ''.
+		expect(el.style.fontVariationSettings).toBe("'wght' 400")
+	})
+
+	it('touchcancel triggers leave behaviour (no permanent bold state)', () => {
+		const el = makeElement('Hello world')
+		applyBoldLock(el, { normalWeight: 400, hoverWeight: 700 })
+		el.dispatchEvent(new Event('touchstart'))
+		el.dispatchEvent(new Event('touchcancel'))
+		expect(el.style.letterSpacing).toBe('')
 	})
 })

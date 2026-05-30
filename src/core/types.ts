@@ -2,7 +2,14 @@
 
 /** Configuration for a single additional variable font axis driven on hover */
 export interface AxisConfig {
-	/** Axis value at rest — defaults to the element's current computed value for that axis */
+	/**
+	 * Axis value at rest.
+	 * Defaults to the element's current computed value for that axis when provided by the
+	 * font's `font-variation-settings`. If the axis is not present in the computed FVS,
+	 * falls back to `0` — which is incorrect for axes that have a non-zero default (e.g.
+	 * `wdth` is typically 100, `opsz` tracks font-size). Provide an explicit `normal`
+	 * value for any axis whose font-default is not `0`.
+	 */
 	normal?: number
 	/** Axis value on hover */
 	hover: number
