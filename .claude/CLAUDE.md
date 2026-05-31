@@ -13,6 +13,7 @@ The files below are **automatically overwritten** by `npm run sync` in the paren
 | `site/src/components/ToolDirectory.tsx` | `type-tools/shared/components/ToolDirectory.tsx` |
 | `site/src/components/SiteFooter.tsx` | `type-tools/shared/components/SiteFooter.tsx` |
 | `site/src/components/CodeBlock.tsx` | `type-tools/shared/components/CodeBlock.tsx` |
+| `site/src/components/CookieBanner.tsx` | `type-tools/shared/components/CookieBanner.tsx` |
 | `site/src/app/base.css` | `type-tools/shared/styles/base.css` |
 | `site/public/fonts/Merriweather.woff2` | `type-tools/shared/fonts/Merriweather.woff2` |
 | `site/public/fonts/Merriweather-Italic.woff2` | `type-tools/shared/fonts/Merriweather-Italic.woff2` |

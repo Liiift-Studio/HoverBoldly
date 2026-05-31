@@ -55,11 +55,13 @@ function tokenize(code: string): ReactNode[] {
 export default function CodeBlock({ code }: { code: string }) {
 	const [copied, setCopied] = useState(false)
 
-	function copy() {
-		navigator.clipboard.writeText(code).then(() => {
+	async function copy() {
+		if (!navigator.clipboard) return
+		try {
+			await navigator.clipboard.writeText(code)
 			setCopied(true)
 			setTimeout(() => setCopied(false), 1500)
-		})
+		} catch {}
 	}
 
 	return (
