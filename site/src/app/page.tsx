@@ -1,3 +1,4 @@
+// page.tsx — hoverBoldly landing page
 import Demo from "@/components/Demo"
 import CopyInstall from "@/components/CopyInstall"
 import CodeBlock from "@/components/CodeBlock"
@@ -5,19 +6,33 @@ import ToolDirectory from "@/components/ToolDirectory"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
 import SiteFooter from "../components/SiteFooter"
-import { MagnetChar } from "@liiift-studio/magnettype"
 
 export default function Home() {
+	const jsonLd = {
+		"@context": "https://schema.org",
+		"@type": "SoftwareApplication",
+		"name": "Hover Boldly",
+		"url": "https://hoverboldly.com",
+		"description": "Bold on hover without layout shift. Measures the width difference between normal and bold weight using Canvas, then compensates with letter-spacing. Zero reflow.",
+		"applicationCategory": "DeveloperApplication",
+		"operatingSystem": "Any",
+		"offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+	}
+
 	return (
 		<main className="flex flex-col items-center px-6 py-20 gap-24">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+			/>
 
 			{/* Hero */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex flex-col gap-2">
 					<p className="text-xs uppercase tracking-widest opacity-50">hoverboldly</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Bold on hover,</MagnetChar><br />
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ opacity: 0.5, fontStyle: "italic" }}>Zero layout shift.</MagnetChar>
+						Bold on hover,<br />
+						<span style={{ opacity: 0.5, fontStyle: "italic" }}>Zero layout shift.</span>
 					</h1>
 				</div>
 				<div className="flex items-center gap-4">
@@ -28,13 +43,13 @@ export default function Home() {
 					<span>TypeScript</span><span>·</span><span>Canvas measurement</span><span>·</span><span>React + Vanilla JS</span>
 				</div>
 				<p className="text-base opacity-60 leading-relaxed max-w-lg">
-					Every browser will reflow text when you hover to bold — words push down, lines shift. Bold Lock measures the exact width difference using Canvas, then compensates with letter-spacing so the line never moves.
+					Every browser will reflow text when you hover to bold — words push down, lines shift. Hover Boldly measures the exact width difference using Canvas, then compensates with letter-spacing so the line never moves.
 				</p>
 			</section>
 
 			{/* Demo */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-4">
-				<p className="text-xs uppercase tracking-widest opacity-50">Live demo — hover the paragraph</p>
+				<h2 className="text-xs uppercase tracking-widest opacity-50">Live demo — hover or tap the paragraph</h2>
 				<div className="rounded-xl -mx-8 px-8 py-8" style={{ background: "rgba(0,0,0,0.25)", overflow: 'hidden' }}>
 					<Demo />
 				</div>
@@ -42,7 +57,7 @@ export default function Home() {
 
 			{/* Explanation */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
-				<p className="text-xs uppercase tracking-widest opacity-50">The problem with bold hover</p>
+				<h2 className="text-xs uppercase tracking-widest opacity-50">The problem with bold hover</h2>
 				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed opacity-70">
 					<div className="flex flex-col gap-3">
 						<p className="font-semibold opacity-100 text-base">Why text reflows</p>
@@ -58,14 +73,18 @@ export default function Home() {
 			{/* Usage */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex items-baseline gap-4">
-					<p className="text-xs uppercase tracking-widest opacity-50">Usage</p>
+					<h2 className="text-xs uppercase tracking-widest opacity-50">Usage</h2>
 				</div>
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Drop-in component</p>
 						<CodeBlock code={`import { BoldLockText } from '@liiift-studio/hoverboldly'
 
-<BoldLockText normalWeight={300} hoverWeight={700} transitionDuration={150}>
+<BoldLockText
+  normalWeight={300}
+  hoverWeight={700}
+  mode="word"
+>
   Hover over this text...
 </BoldLockText>`} />
 					</div>
@@ -83,18 +102,23 @@ const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 const el = document.querySelector('p')
 const cleanup = applyBoldLock(el, { normalWeight: 300, hoverWeight: 700 })
 
-// Later — remove listeners and reset styles:
+// Later — removes listeners, resets styles, and in word/proximity modes
+// also restores element.innerHTML to its original state:
 cleanup()`} />
 					</div>
 					<div className="flex flex-col gap-3">
 						<p className="opacity-50">Options</p>
-						<table className="w-full text-xs">
+						<table className="w-full text-xs" aria-label="BoldLock API options">
 							<thead><tr className="opacity-50 text-left"><th className="pb-2 pr-6 font-normal">Option</th><th className="pb-2 pr-6 font-normal">Default</th><th className="pb-2 font-normal">Description</th></tr></thead>
 							<tbody className="opacity-70">
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">normalWeight</td><td className="py-2 pr-6">computed</td><td className="py-2">Font weight at rest.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">hoverWeight</td><td className="py-2 pr-6">700</td><td className="py-2">Font weight on hover.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">transitionDuration</td><td className="py-2 pr-6">150</td><td className="py-2">Transition duration in milliseconds.</td></tr>
-								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">mode</td><td className="py-2 pr-6">&apos;element&apos;</td><td className="py-2">&apos;element&apos; = whole element hovers together, &apos;word&apos; = individual word hover.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">mode</td><td className="py-2 pr-6">&apos;element&apos;</td><td className="py-2">&apos;element&apos; = whole element bolds on hover. &apos;word&apos; = individual word hover targets. &apos;proximity&apos; = weight increases per line based on cursor distance, fading with distance.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">proximityThreshold</td><td className="py-2 pr-6">120</td><td className="py-2">Distance in px from a line&apos;s centre over which weight fades. Only used in &apos;proximity&apos; mode.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">resizeObserver</td><td className="py-2 pr-6">true</td><td className="py-2">Re-measure compensation when the element&apos;s size changes (e.g. responsive font-size).</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">axes</td><td className="py-2 pr-6">—</td><td className="py-2">Additional variable font axes to drive on hover (e.g. slnt, wdth). Each key is an OpenType axis tag with normal/hover values.</td></tr>
+								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">falseSlant</td><td className="py-2 pr-6">—</td><td className="py-2">Fake italic via CSS skewX() for fonts without a slnt axis. Provide <code>hoverDeg</code> (and optionally <code>normalDeg</code>).</td></tr>
 							</tbody>
 						</table>
 					</div>

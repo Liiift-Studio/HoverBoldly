@@ -1,8 +1,15 @@
+// layout.tsx — root layout for hoverBoldly site
 import type { Metadata } from "next"
 import "./globals.css"
-import { Inter } from "next/font/google"
+import localFont from "next/font/local"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+// Use locally-hosted Inter to avoid build-time network requests to Google Fonts
+const inter = localFont({
+	src: "../../public/fonts/inter-300.woff",
+	variable: "--font-sans",
+	weight: "300",
+	display: "swap",
+})
 
 export const metadata: Metadata = {
 	title: "Hover Boldly — Bold on hover, zero layout shift",
@@ -16,11 +23,20 @@ export const metadata: Metadata = {
 		url: "https://hoverboldly.com",
 		siteName: "Hover Boldly",
 		type: "website",
+		images: [
+			{
+				url: "https://hoverboldly.com/opengraph-image",
+				width: 1200,
+				height: 630,
+				alt: "Hover Boldly — Bold on hover, zero layout shift",
+			},
+		],
 	},
 	twitter: {
 		card: "summary_large_image",
 		title: "Hover Boldly — Bold on hover, zero layout shift",
 		description: "Text goes bold on hover. The line width stays exactly the same. No reflow, no shift.",
+		images: ["https://hoverboldly.com/opengraph-image"],
 	},
 	metadataBase: new URL("https://hoverboldly.com"),
 	alternates: { canonical: "https://hoverboldly.com" },
