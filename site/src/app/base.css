@@ -26,6 +26,12 @@
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
+	/* Value steps for typographic hierarchy — use text-muted / text-subtle / text-faint
+	   instead of opacity on text. Per-tool hue values are written into each globals.css
+	   :root by sync-sites.mjs (toolFgMuted/Subtle/Faint). */
+	--color-muted: var(--foreground-muted);
+	--color-subtle: var(--foreground-subtle);
+	--color-faint: var(--foreground-faint);
 }
 
 button, [role="button"] {

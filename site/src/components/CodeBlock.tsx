@@ -71,7 +71,7 @@ export default function CodeBlock({ code }: { code: string }) {
 			</pre>
 			<button
 				onClick={copy}
-				className="absolute top-3 right-3 p-1.5 rounded opacity-20 hover:opacity-70 transition-opacity"
+				className="absolute top-3 right-3 p-1.5 rounded text-subtle hover:text-foreground hover:bg-white/5 transition-colors"
 				aria-label="Copy code to clipboard"
 			>
 				{copied ? (

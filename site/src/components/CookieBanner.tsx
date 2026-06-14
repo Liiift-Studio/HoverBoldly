@@ -42,11 +42,11 @@ export default function CookieBanner() {
 			aria-label="Cookie consent"
 			className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/90 backdrop-blur-sm px-4 py-3 flex flex-col sm:flex-row items-center gap-3 text-xs"
 		>
-			<p className="flex-1 opacity-60">
+			<p className="flex-1 text-muted">
 				This site uses Google Analytics to understand how visitors use it. No personal data is shared beyond standard GA4 defaults.
 			</p>
 			<div className="flex gap-4 shrink-0">
-				<button onClick={deny} className="opacity-50 hover:opacity-100 transition-opacity">
+				<button onClick={deny} className="px-3 py-1.5 rounded text-muted hover:text-foreground hover:bg-white/5 transition-colors">
 					Decline
 				</button>
 				<button

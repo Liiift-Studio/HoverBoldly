@@ -173,3 +173,32 @@ export function toolFg(toolId) {
 	if (t === 3 && index % 4 >= 2) return `oklch(0.15 0.06 ${H})`
 	return `oklch(0.93 0.03 ${H})`
 }
+
+/** Whether the foreground is dark (tier-3 light-background tools). Muted steps move toward the bg. */
+function fgIsDark(index) {
+	return tier(TOOL_IDS.length) === 3 && index % 4 >= 2
+}
+
+/** Secondary text — solid, readable muted step. Replaces opacity-50/60/70 on text. */
+export function toolFgMuted(toolId) {
+	const index = TOOL_IDS.indexOf(toolId)
+	if (index < 0) return 'oklch(0.78 0.025 0)'
+	const H = hueForIndex(index)
+	return fgIsDark(index) ? `oklch(0.34 0.022 ${H})` : `oklch(0.78 0.025 ${H})`
+}
+
+/** Tertiary text — code samples, captions, recessed body. */
+export function toolFgSubtle(toolId) {
+	const index = TOOL_IDS.indexOf(toolId)
+	if (index < 0) return 'oklch(0.66 0.020 0)'
+	const H = hueForIndex(index)
+	return fgIsDark(index) ? `oklch(0.46 0.018 ${H})` : `oklch(0.66 0.020 ${H})`
+}
+
+/** Decorative text — step numerals, hints. Never body copy. */
+export function toolFgFaint(toolId) {
+	const index = TOOL_IDS.indexOf(toolId)
+	if (index < 0) return 'oklch(0.55 0.016 0)'
+	const H = hueForIndex(index)
+	return fgIsDark(index) ? `oklch(0.58 0.014 ${H})` : `oklch(0.55 0.016 ${H})`
+}

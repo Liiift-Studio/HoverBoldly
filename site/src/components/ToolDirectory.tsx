@@ -43,17 +43,17 @@ export default function ToolDirectory({ current }: { current: string }) {
 				const label = (
 					<>
 						<span>{tool.name}</span>
-						<span className="hidden sm:block" style={{ fontSize: '0.72em', opacity: 0.5, marginTop: '0.18em' }}>{tool.desc}</span>
-						<span className="sm:hidden" style={{ fontSize: '0.8em', opacity: 0.5, marginTop: '0.18em' }}>{tool.short}</span>
+						<span className="hidden sm:block" style={{ fontSize: '0.72em', color: 'var(--foreground-subtle)', marginTop: '0.18em' }}>{tool.desc}</span>
+						<span className="sm:hidden" style={{ fontSize: '0.8em', color: 'var(--foreground-subtle)', marginTop: '0.18em' }}>{tool.short}</span>
 					</>
 				)
 				return tool.id === current ? (
-					<span key={tool.id} className="flex flex-col opacity-100 text-left">{label}</span>
+					<span key={tool.id} className="flex flex-col text-foreground text-left">{label}</span>
 				) : (
 					<a
 						key={tool.id}
 						href={tool.url}
-						className="flex flex-col opacity-30 hover:opacity-100 transition-opacity text-left"
+						className="flex flex-col text-muted hover:text-foreground transition-colors text-left"
 						onMouseEnter={() => handleEnter(tool.id)}
 						onMouseLeave={handleLeave}
 					>

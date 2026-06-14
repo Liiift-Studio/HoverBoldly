@@ -86,12 +86,12 @@ export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFoo
 			<Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
 			<ToolDirectory current={current} />
 			<hr className="border-white/10" />
-			<div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 opacity-50">
+			<div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 text-muted">
 				<a
 					href="https://liiift.studio"
 					target="_blank"
 					rel="noopener noreferrer"
-					className="hover:opacity-100 transition-opacity"
+					className="w-fit -mx-2 px-2 py-0.5 rounded hover:bg-white/5 hover:text-foreground transition-colors"
 				>
 					liiift.studio
 				</a>
