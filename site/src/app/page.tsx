@@ -6,6 +6,7 @@ import ToolDirectory from "@/components/ToolDirectory"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
 import SiteFooter from "../components/SiteFooter"
+import { MagnetChar } from "@liiift-studio/magnettype"
 
 export default function Home() {
 	const jsonLd = {
@@ -29,27 +30,27 @@ export default function Home() {
 			{/* Hero */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex flex-col gap-2">
-					<p className="text-xs uppercase tracking-widest opacity-50">hoverboldly</p>
+					<p className="text-xs uppercase tracking-[0.18em] font-medium text-muted">hoverboldly</p>
 					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						Bold on hover,<br />
-						<span style={{ opacity: 0.5, fontStyle: "italic" }}>Zero layout shift.</span>
+						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Bold on hover,</MagnetChar><br />
+						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ color: "var(--foreground-subtle)", fontStyle: "italic" }}>Zero layout shift.</MagnetChar>
 					</h1>
 				</div>
 				<div className="flex items-center gap-4">
 					<CopyInstall />
-					<a href="https://github.com/Liiift-Studio/HoverBoldly" className="text-sm opacity-50 hover:opacity-100 transition-opacity">GitHub</a>
+					<a href="https://github.com/Liiift-Studio/HoverBoldly" className="text-sm text-muted hover:text-foreground transition-colors">GitHub</a>
 				</div>
-				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-50 tracking-wide">
+				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted tracking-wide">
 					<span>TypeScript</span><span>·</span><span>Canvas measurement</span><span>·</span><span>React + Vanilla JS</span>
 				</div>
-				<p className="text-base opacity-60 leading-relaxed max-w-lg">
+				<p className="text-base text-muted leading-relaxed max-w-lg">
 					Every browser will reflow text when you hover to bold — words push down, lines shift. Hover Boldly measures the exact width difference using Canvas, then compensates with letter-spacing so the line never moves.
 				</p>
 			</section>
 
 			{/* Demo */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-4">
-				<h2 className="text-xs uppercase tracking-widest opacity-50">Live demo — hover or tap the paragraph</h2>
+				<h2 className="text-xs uppercase tracking-[0.18em] font-medium text-muted">Live demo — hover or tap the paragraph</h2>
 				<div className="rounded-xl -mx-8 px-8 py-8" style={{ background: "rgba(0,0,0,0.25)", overflow: 'hidden' }}>
 					<Demo />
 				</div>
@@ -57,14 +58,14 @@ export default function Home() {
 
 			{/* Explanation */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
-				<h2 className="text-xs uppercase tracking-widest opacity-50">The problem with bold hover</h2>
-				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed opacity-70">
+				<h2 className="text-xs uppercase tracking-[0.18em] font-medium text-muted">The problem with bold hover</h2>
+				<div className="prose-grid grid grid-cols-1 sm:grid-cols-2 gap-12 text-sm leading-relaxed text-muted">
 					<div className="flex flex-col gap-3">
-						<p className="font-semibold opacity-100 text-base">Why text reflows</p>
+						<p className="font-semibold text-foreground text-base">Why text reflows</p>
 						<p>Bold glyphs are wider. When you change font-weight on hover, every character in the element grows slightly, words push into the next line, and the whole paragraph reflts. It&rsquo;s jarring and there&rsquo;s no CSS fix.</p>
 					</div>
 					<div className="flex flex-col gap-3">
-						<p className="font-semibold opacity-100 text-base">How we fix it</p>
+						<p className="font-semibold text-foreground text-base">How we fix it</p>
 						<p>Canvas measureText gives us the exact advance width of each line at both weights. The difference becomes a negative letter-spacing compensation applied on hover, so total line width stays identical. One measurement pass on mount, zero reflow on hover.</p>
 					</div>
 				</div>
@@ -73,11 +74,11 @@ export default function Home() {
 			{/* Usage */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 				<div className="flex items-baseline gap-4">
-					<h2 className="text-xs uppercase tracking-widest opacity-50">Usage</h2>
+					<h2 className="text-xs uppercase tracking-[0.18em] font-medium text-muted">Usage</h2>
 				</div>
 				<div className="flex flex-col gap-8 text-sm">
 					<div className="flex flex-col gap-3">
-						<p className="opacity-50">Drop-in component</p>
+						<p className="text-muted">Drop-in component</p>
 						<CodeBlock code={`import { BoldLockText } from '@liiift-studio/hoverboldly'
 
 <BoldLockText
@@ -89,14 +90,14 @@ export default function Home() {
 </BoldLockText>`} />
 					</div>
 					<div className="flex flex-col gap-3">
-						<p className="opacity-50">Hook</p>
+						<p className="text-muted">Hook</p>
 						<CodeBlock code={`import { useBoldLock } from '@liiift-studio/hoverboldly'
 
 const ref = useBoldLock({ normalWeight: 300, hoverWeight: 700 })
 <p ref={ref}>{children}</p>`} />
 					</div>
 					<div className="flex flex-col gap-3">
-						<p className="opacity-50">Vanilla JS</p>
+						<p className="text-muted">Vanilla JS</p>
 						<CodeBlock code={`import { applyBoldLock } from '@liiift-studio/hoverboldly'
 
 const el = document.querySelector('p')
@@ -107,10 +108,16 @@ const cleanup = applyBoldLock(el, { normalWeight: 300, hoverWeight: 700 })
 cleanup()`} />
 					</div>
 					<div className="flex flex-col gap-3">
-						<p className="opacity-50">Options</p>
+						<p className="text-muted">Options</p>
 						<table className="w-full text-xs" aria-label="BoldLock API options">
-							<thead><tr className="opacity-50 text-left"><th className="pb-2 pr-6 font-normal">Option</th><th className="pb-2 pr-6 font-normal">Default</th><th className="pb-2 font-normal">Description</th></tr></thead>
-							<tbody className="opacity-70">
+							<thead>
+								<tr className="text-subtle text-left">
+									<th className="pb-2 pr-6 font-normal">Option</th>
+									<th className="pb-2 pr-6 font-normal">Default</th>
+									<th className="pb-2 font-normal">Description</th>
+								</tr>
+							</thead>
+							<tbody className="text-muted">
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">normalWeight</td><td className="py-2 pr-6">computed</td><td className="py-2">Font weight at rest.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">hoverWeight</td><td className="py-2 pr-6">700</td><td className="py-2">Font weight on hover.</td></tr>
 								<tr className="border-t border-white/10 hover:bg-white/5 transition-colors"><td className="py-2 pr-6 font-mono">transitionDuration</td><td className="py-2 pr-6">150</td><td className="py-2">Transition duration in milliseconds.</td></tr>

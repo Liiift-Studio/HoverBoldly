@@ -25,7 +25,7 @@ function Slider({ label, value, min, max, step, onChange, description }: { label
 	const descId = useId()
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-xs uppercase tracking-widest opacity-50">{label}</span>
+			<span className="text-xs uppercase tracking-[0.18em] font-medium text-muted">{label}</span>
 			<input
 				type="range"
 				min={min}
@@ -40,7 +40,7 @@ function Slider({ label, value, min, max, step, onChange, description }: { label
 				style={{ touchAction: 'none' }}
 			/>
 			{description && <span id={descId} className="sr-only">{description}</span>}
-			<span className="tabular-nums text-xs opacity-50 text-right" aria-hidden="true">{value}</span>
+			<span className="tabular-nums text-xs text-muted text-right" aria-hidden="true">{value}</span>
 		</div>
 	)
 }
@@ -368,7 +368,7 @@ export default function Demo() {
 				)}
 				<BeforeAfterToggle active={beforeAfter} onClick={() => setComparing(v => !v)} />
 			</div>
-			<p id={hintId} className="text-xs opacity-50 italic mt-8" style={{ lineHeight: "1.8" }}>
+			<p id={hintId} className="text-xs text-muted italic mt-8" style={{ lineHeight: "1.8" }}>
 				{dwellMode
 					? `Gaze dwell mode — hover a word for ${dwellMs}ms to bold it. A progress bar shows fill beneath the word.`
 					: 'Move your cursor over any word to bold it, or tap on mobile. Line endings stay fixed regardless of weight. On mobile, the bold resets after 2 seconds.'
