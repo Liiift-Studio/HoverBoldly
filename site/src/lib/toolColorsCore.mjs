@@ -167,12 +167,40 @@ export function toolBtnBg(toolId) {
 /** --foreground oklch value for a given tool ID — dark for light backgrounds, light for dark. */
 export function toolFg(toolId) {
 	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.93 0.03 0)'
+	if (index < 0) return 'oklch(0.97 0.008 0)'
 	const H = hueForIndex(index)
 	const t = tier(TOOL_IDS.length)
-	if (t === 3 && index % 4 >= 2) return `oklch(0.15 0.06 ${H})`
-	return `oklch(0.93 0.03 ${H})`
+	if (t === 3 && index % 4 >= 2) return `oklch(0.18 0.03 ${H})`
+	// Near-white primary text — a whisper of the tool hue for cohesion, but reads as white.
+	return `oklch(0.97 0.008 ${H})`
 }
+
+/** sRGB hex for an OKLCH(L, C, H) triple — for contexts that can't use oklch()
+ *  (Satori OG images, static favicon SVGs). Clamps to the sRGB gamut. */
+export function oklchToHex(L, C, H) {
+	const h = H * Math.PI / 180
+	const [lr, lg, lb] = oklabToLinearSRGB(L, C * Math.cos(h), C * Math.sin(h))
+	const toByte = (c) => {
+		const cl = Math.min(1, Math.max(0, c))
+		const s = cl <= 0.0031308 ? 12.92 * cl : 1.055 * cl ** (1 / 2.4) - 0.055
+		return Math.round(Math.min(1, Math.max(0, s)) * 255)
+	}
+	return '#' + [lr, lg, lb].map((c) => toByte(c).toString(16).padStart(2, '0')).join('')
+}
+
+/** Parse an `oklch(L C H)` string (as produced by the tool* functions) into sRGB hex. */
+export function oklchStringToHex(str) {
+	const m = /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/.exec(str)
+	if (!m) return '#000000'
+	return oklchToHex(parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3]))
+}
+
+/** Hex shorthands matching the site CSS variables — for OG images and favicons. */
+export function toolBgHex(toolId)     { return oklchStringToHex(toolBg(toolId)) }
+export function toolFgHex(toolId)     { return oklchStringToHex(toolFg(toolId)) }
+export function toolFgMutedHex(toolId)  { return oklchStringToHex(toolFgMuted(toolId)) }
+export function toolFgSubtleHex(toolId) { return oklchStringToHex(toolFgSubtle(toolId)) }
+export function toolBtnBgHex(toolId)  { return oklchStringToHex(toolBtnBg(toolId)) }
 
 /** Whether the foreground is dark (tier-3 light-background tools). Muted steps move toward the bg. */
 function fgIsDark(index) {
