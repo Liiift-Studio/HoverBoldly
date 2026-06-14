@@ -16,7 +16,7 @@ const TOOLS = [
 	{ name: "Optical Margin", url: "https://opticalmargin.com",                  id: "opticalMargin", desc: "Hangs punctuation beyond the text block for optical alignment",        short: "Hanging punctuation"    },
 	{ name: "Opsz Stepper",   url: "https://opszstepper.com",                   id: "opszStepper",   desc: "Hot-swaps optical font families as font-size crosses thresholds",      short: "Font-size steps"        },
 	{ name: "Ragtooth",       url: "https://ragtooth.com",                       id: "ragtooth",      desc: "Sets a deliberate sawtooth rag on paragraph line endings",             short: "Sawtooth rag"           },
-	{ name: "Speech Type",    url: "https://speechtype.liiift-studio.com",                     id: "speechType",    desc: "Highlights each spoken word with typographic emphasis in real time",   short: "Voice emphasis"         },
+	{ name: "Speech Type",    url: "https://speechtype.vercel.app",                     id: "speechType",    desc: "Highlights each spoken word with typographic emphasis in real time",   short: "Voice emphasis"         },
 	{ name: "Stabil Type",    url: "https://stabiltype.com",                     id: "stabilType",    desc: "Adapts tracking, weight, and opsz to motion velocity",                 short: "Motion-adaptive"        },
 	{ name: "Steady Gray",    url: "https://steadygray.com",                     id: "steadyGray",    desc: "Equalises optical density across paragraph lines",                     short: "Optical density"        },
 	{ name: "Text Breath",    url: "https://textbreath.com",                     id: "textBreath",    desc: "Oscillates letter-spacing per line in a slow breathing wave",          short: "Breathing spacing"      },
