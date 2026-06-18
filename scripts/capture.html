@@ -1,0 +1,175 @@
+<!doctype html>
+<!-- capture.html — reproducible Bold Lock visuals for the README.
+     Reimplements the documented algorithm (Canvas measureText at both weights →
+     distribute the width delta as negative letter-spacing) on the real
+     Merriweather variable font, alongside a naive reflowing baseline for
+     contrast. Scene + hover state are driven by URL params so Playwright can
+     capture deterministically without real pointer events. -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+	/* Local variable font — same face the live site uses. */
+	@font-face {
+		font-family: "Merriweather";
+		src: url("../site/public/fonts/Merriweather.woff2") format("woff2");
+		font-weight: 300 900;
+		font-display: block;
+	}
+
+	:root {
+		--bg: oklch(0.10 0.12 275);
+		--fg: oklch(0.93 0.03 275);
+		--accent: oklch(0.78 0.16 275);
+		--rule: oklch(0.93 0.03 275 / 0.18);
+	}
+
+	html, body { margin: 0; }
+	body {
+		/* Transparent so omitBackground gives clean rounded corners. */
+		background: transparent;
+		font-family: "Merriweather", serif;
+		color: var(--fg);
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.card {
+		background: var(--bg);
+		border-radius: 22px;
+		padding: 44px 48px;
+		width: 760px;
+		box-sizing: border-box;
+	}
+
+	.eyebrow {
+		font-family: ui-sans-serif, system-ui, sans-serif;
+		font-size: 13px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-weight: 600;
+		opacity: 0.62;
+		margin: 0 0 6px;
+	}
+	.eyebrow.good { color: var(--accent); }
+
+	.row {
+		font-size: 30px;
+		line-height: 1.5;
+		font-weight: 300;
+		font-variation-settings: "wght" 300;
+		margin: 0;
+		/* A right-edge marker so width drift is obvious at a glance. */
+		border-right: 2px solid var(--rule);
+		padding-right: 14px;
+		display: inline-block;
+		white-space: nowrap;
+	}
+
+	/* The hovered word, styled by the harness JS. */
+	.target { color: var(--fg); }
+
+	/* --- Naive baseline: CSS bold on hover, no compensation. --- */
+	.naive .target.on {
+		font-weight: 700;
+		font-variation-settings: "wght" 700;
+	}
+
+	.gap { height: 30px; }
+	.label {
+		font-family: ui-sans-serif, system-ui, sans-serif;
+		font-size: 13px;
+		opacity: 0.55;
+		margin: 8px 0 0;
+	}
+	.label .delta { color: #ff6b6b; font-weight: 600; }
+	.label .ok { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+	<div id="naiveBlock">
+		<p class="eyebrow">Naive&nbsp;&nbsp;<code>:hover { font-weight: 700 }</code></p>
+		<p class="row naive"><span>Hover bolds the </span><span class="target">middle</span><span> word here.</span></p>
+		<p class="label" id="naiveLabel">&nbsp;</p>
+	</div>
+	<div class="gap"></div>
+	<div id="lockBlock">
+		<p class="eyebrow good">Bold Lock&nbsp;&nbsp;<code>letter-spacing compensation</code></p>
+		<p class="row lock"><span>Hover bolds the </span><span class="target">middle</span><span> word here.</span></p>
+		<p class="label" id="lockLabel">&nbsp;</p>
+	</div>
+</div>
+
+<script>
+	const params = new URLSearchParams(location.search)
+	const scene = params.get("scene") || "compare"
+	const hover = params.get("hover") === "1"
+
+	// Measure rendered text width of a string at a given wght, mirroring the
+	// library's measureAtWeight (numeric weight in the Canvas font shorthand).
+	function widthAt(text, wght, fontSize, family) {
+		const c = document.createElement("canvas")
+		const ctx = c.getContext("2d")
+		ctx.font = `${wght} ${fontSize}px ${family}`
+		return ctx.measureText(text).width
+	}
+
+	// Apply Bold Lock to a single target word: bold it, then distribute the
+	// width delta across its character gaps as negative letter-spacing (em).
+	function applyLock(targetEl) {
+		const cs = getComputedStyle(targetEl)
+		const fs = parseFloat(cs.fontSize)
+		const family = "Merriweather"
+		const text = targetEl.textContent
+		const normalW = widthAt(text, 300, fs, family)
+		const boldW = widthAt(text, 700, fs, family)
+		const delta = boldW - normalW
+		const chars = text.length
+		const compEm = chars > 1 ? -(delta / chars) / fs : 0
+		targetEl.style.fontVariationSettings = '"wght" 700'
+		targetEl.style.fontWeight = "700"
+		targetEl.style.letterSpacing = `${compEm}em`
+		return { delta, compEm }
+	}
+
+	function run() {
+		const naiveRow = document.querySelector(".row.naive")
+		const lockRow = document.querySelector(".row.lock")
+		const naiveTarget = naiveRow.querySelector(".target")
+		const lockTarget = lockRow.querySelector(".target")
+
+		// Baseline widths at rest (both rows identical at rest).
+		const restWidth = lockRow.getBoundingClientRect().width
+
+		if (hover) {
+			naiveTarget.classList.add("on")
+			const info = applyLock(lockTarget)
+			// Report measured drift after layout settles.
+			requestAnimationFrame(() => {
+				const naiveWidth = naiveRow.getBoundingClientRect().width
+				const lockWidth = lockRow.getBoundingClientRect().width
+				const naiveDrift = (naiveWidth - restWidth).toFixed(1)
+				const lockDrift = (lockWidth - restWidth).toFixed(1)
+				document.getElementById("naiveLabel").innerHTML =
+					`Line width shifted <span class="delta">+${naiveDrift}px</span> — surrounding text reflows.`
+				document.getElementById("lockLabel").innerHTML =
+					`Line width shifted <span class="ok">${lockDrift}px</span> — bolder, same footprint.`
+				document.body.dataset.ready = "1"
+			})
+		} else {
+			document.getElementById("naiveLabel").innerHTML = "At rest — both rows are weight 300."
+			document.getElementById("lockLabel").innerHTML = "At rest — both rows are weight 300."
+			document.body.dataset.ready = "1"
+		}
+
+		// Scene trimming for single-row captures.
+		if (scene === "hero") {
+			document.getElementById("naiveBlock").style.display = "none"
+			document.querySelector(".gap").style.display = "none"
+		}
+	}
+
+	document.fonts.ready.then(() => requestAnimationFrame(run))
+</script>
+</body>
+</html>

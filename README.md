@@ -4,9 +4,15 @@
 
 Every browser reflows text when you hover to bold — words push down, lines shift. Bold Lock measures the exact width difference using Canvas `measureText`, then compensates with letter-spacing so the line never moves. One measurement pass on mount; zero reflow on hover.
 
-**[hoverboldly.com](https://hoverboldly.com)** · [npm](https://www.npmjs.com/package/@liiift-studio/hoverboldly) · [GitHub](https://github.com/Liiift-Studio/HoverBoldly)
+![Two identical lines hovering the word "middle". The naive row uses :hover { font-weight: 700 } and its right edge shifts +5.8px, reflowing surrounding text. The Bold Lock row gets visibly bolder while its right edge stays put — 0.0px drift, same footprint.](https://raw.githubusercontent.com/Liiift-Studio/HoverBoldly/main/assets/compare-hover.png?v=1)
 
-TypeScript · Canvas measurement · React + Vanilla JS
+*On hover, the naive row's right edge jumps +5.8px and pushes the rest of the line; Bold Lock holds the same width while the word gets bolder.*
+
+**[See it live → hoverboldly.com](https://hoverboldly.com)** · [npm](https://www.npmjs.com/package/@liiift-studio/hoverboldly) · [GitHub](https://github.com/Liiift-Studio/HoverBoldly)
+
+TypeScript · Canvas measurement · React + Vanilla JS · Zero runtime dependencies
+
+> **Requires a variable font with a `wght` axis** (or at least two real weights). Bold Lock drives `font-variation-settings`, so the line gets heavier without swapping to a separate bold face.
 
 ---
 
@@ -105,7 +111,6 @@ const shiftOpts: BoldShiftOptions = { normalWeight: 400, boldWeight: 700 }
 |--------|------|---------|-------------|
 | `normalWeight` | `number` | `400` | wght axis value at rest |
 | `boldWeight` | `number` | `700` | wght axis value when bold |
-| `resizeObserver` | `boolean` | `false` | Automatically recalculate compensation when the container is resized (via ResizeObserver) |
 
 ---
 
@@ -114,6 +119,8 @@ const shiftOpts: BoldShiftOptions = { normalWeight: 400, boldWeight: 700 }
 In `'element'` mode, Canvas `measureText` reads the element's full text content at both weights once on mount. The width delta is distributed across character gaps as a negative letter-spacing, applied on `mouseenter` and reversed on `mouseleave` — total line width stays identical at both weights.
 
 In `'word'` mode, each word is measured and compensated independently so individual words can hover without affecting their neighbours.
+
+Compensation is a Canvas-measured approximation tuned for the `wght` axis — only `wght` is compensated. Additional `axes` (e.g. `wdth`) and `falseSlant` change the lean or width but are not width-corrected, so keep their deltas small to stay imperceptible.
 
 Both modes respond to mouse, touch (`touchstart`/`touchend`), and keyboard (`focusin`/`focusout`), so the effect works on mobile and for keyboard navigation. `prefers-reduced-motion: reduce` disables the CSS transition, keeping the weight change instantaneous but still happening.
 
@@ -141,4 +148,4 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 
 ---
 
-Current version: 1.1.12
+Current version: 1.1.14
