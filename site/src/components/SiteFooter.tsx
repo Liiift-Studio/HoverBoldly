@@ -91,9 +91,17 @@ export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFoo
 					href="https://liiift.studio"
 					target="_blank"
 					rel="noopener noreferrer"
-					className="w-fit -mx-2 px-2 py-0.5 rounded hover:bg-white/5 hover:text-foreground transition-colors"
+					aria-label="Liiift Studio"
+					className="w-fit -mx-2 px-2 py-1 rounded hover:bg-white/5 transition-colors"
 				>
-					liiift.studio
+					{/* eslint-disable-next-line @next/next/no-img-element -- small static logo; next/image adds no value here */}
+					<img
+						src="/logo-white.png"
+						alt="Liiift Studio"
+						width={47}
+						height={28}
+						className="h-4 w-auto opacity-60 hover:opacity-100 transition-opacity"
+					/>
 				</a>
 				<span className="sm:col-start-4 tabular-nums">
 					npm v{npmVersion} · site v{siteVersion}
