@@ -64,9 +64,9 @@ export default function CodeBlock({ code }: { code: string }) {
 		} catch {}
 	}
 
+	// A consistent dark code island on every site — fixed dark background + light text, so it reads
+	// the same on dark- and light-background tools (themed text would otherwise vanish on the block).
 	return (
-		{/* A consistent dark code island on every site — fixed dark background + light text, so it
-		    reads the same on dark- and light-background tools (themed text would vanish on the block). */}
 		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(18,18,22,0.82)', outline: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.9)' }}>
 			<pre className="overflow-x-auto text-xs leading-relaxed font-mono pr-8">
 				<code>{tokenize(code)}</code>
