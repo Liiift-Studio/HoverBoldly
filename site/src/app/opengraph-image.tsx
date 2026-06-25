@@ -11,9 +11,9 @@ export default async function Image() {
 	const interLight = await readFile(join(process.cwd(), 'public/fonts/inter-300.woff'))
 	return new ImageResponse(
 		(
-			<div style={{ background: '#0d020d', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '72px 80px', fontFamily: 'Inter, sans-serif' }}>
+			<div style={{ background: '#fbe1b5', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '72px 80px', fontFamily: 'Inter, sans-serif' }}>
 				{/* Eyebrow label */}
-				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: '#c1b2c0', textTransform: 'uppercase' }}>hover boldly</span>
+				<span style={{ fontSize: 13, letterSpacing: '0.18em', color: '#564c3b', textTransform: 'uppercase' }}>hover boldly</span>
 
 				{/* Decorative bars + headline */}
 				<div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -24,26 +24,26 @@ export default async function Image() {
 								style={{
 									width: `${scale * 600}px`,
 									height: 3,
-									background: i % 2 === 0 ? '#c1b2c0' : '#312c31',
+									background: i % 2 === 0 ? '#564c3b' : '#8d8578',
 									borderRadius: 2,
 								}}
 							/>
 						))}
 					</div>
-					<div style={{ fontSize: 76, color: '#f4e1f2', lineHeight: 1.06, fontWeight: 700, marginBottom: 16 }}>Bold on hover.</div>
-					<div style={{ fontSize: 76, color: '#c1b2c0', lineHeight: 1.06, fontWeight: 300 }}>Zero layout shift.</div>
+					<div style={{ fontSize: 76, color: '#322000', lineHeight: 1.06, fontWeight: 700, marginBottom: 16 }}>Bold on hover.</div>
+					<div style={{ fontSize: 76, color: '#564c3b', lineHeight: 1.06, fontWeight: 300 }}>Zero layout shift.</div>
 				</div>
 
 				{/* Footer */}
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-					<div style={{ fontSize: 14, color: '#c1b2c0', letterSpacing: '0.04em', display: 'flex', gap: 20 }}>
+					<div style={{ fontSize: 14, color: '#564c3b', letterSpacing: '0.04em', display: 'flex', gap: 20 }}>
 						<span>TypeScript</span>
 						<span style={{ opacity: 0.4 }}>·</span>
 						<span>Canvas measurement</span>
 						<span style={{ opacity: 0.4 }}>·</span>
 						<span>React + Vanilla JS</span>
 					</div>
-					<div style={{ fontSize: 13, color: '#998e98', letterSpacing: '0.04em' }}>hoverboldly.com</div>
+					<div style={{ fontSize: 13, color: '#716858', letterSpacing: '0.04em' }}>hoverboldly.com</div>
 				</div>
 			</div>
 		),
