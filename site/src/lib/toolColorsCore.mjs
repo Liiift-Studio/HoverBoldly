@@ -46,7 +46,11 @@ const SEED_HUE     = 28
 
 // Usable lightness tiers, added progressively as the tool count grows.
 const BASE_DARK    = [0.20, 0.24, 0.28, 0.32]  // always present — white text
-const BASE_LIGHT   = [0.835, 0.88, 0.925]      // always present — dark text
+const BASE_LIGHT   = [0.835, 0.88, 0.925]      // solve levels — kept stable so the assignment doesn't reshuffle
+// Light backgrounds are LIFTED to a lighter display band at render time (more text contrast) without
+// changing the solve — so which tool is light/dark and its hue stay fixed. Maps [0.835,0.925] → this.
+const LIGHT_DISP_LO = 0.92
+const LIGHT_DISP_HI = 0.975
 const MID_DARK     = [0.40, 0.46]              // added past MID_DARK_AT — white text (vivid jewel tones)
 const MID_LIGHT    = [0.70, 0.76]              // added past MID_LIGHT_AT — dark text
 const MID_DARK_AT  = 26
@@ -153,13 +157,22 @@ function fmt(L, C, H) {
 	return `oklch(${(+L).toFixed(3)} ${(+C).toFixed(4)} ${H})`
 }
 
+/** Lift a solved light-tier L (in [0.835, 0.925]) into the lighter display band, preserving order. */
+function lightDisplayL(L) {
+	const t = (L - 0.835) / (0.925 - 0.835)
+	return LIGHT_DISP_LO + Math.max(0, Math.min(1, t)) * (LIGHT_DISP_HI - LIGHT_DISP_LO)
+}
+
 // ── Exported colour accessors (signatures unchanged) ───────────────────────
 
 /** --background oklch value for a given tool ID. */
 export function toolBg(toolId) {
 	const c = colorFor(toolId)
 	if (!c) return 'oklch(0.10 0.05 0)'
-	return fmt(c.L, c.C, c.H)
+	if (c.white) return fmt(c.L, c.C, c.H)
+	// Light card — lift to the lighter display band and recompute in-gamut chroma at the new L.
+	const L = lightDisplayL(c.L)
+	return fmt(L, Math.min(DARK_C_CAP, maxInGamutChroma(L, c.H) * DARK_C_FRAC), c.H)
 }
 
 /** --foreground oklch value — near-white on dark backgrounds, dark on light backgrounds. */
@@ -177,7 +190,7 @@ export function toolBtnBg(toolId) {
 		const bL = Math.min(0.95, c.L + 0.10)
 		return fmt(bL, Math.max(0.03, maxInGamutChroma(bL, c.H) * 0.55), c.H)
 	}
-	const bL = Math.max(0.15, c.L - 0.12)
+	const bL = Math.max(0.15, lightDisplayL(c.L) - 0.14)
 	return fmt(bL, Math.min(0.10, maxInGamutChroma(bL, c.H) * 0.70), c.H)
 }
 
