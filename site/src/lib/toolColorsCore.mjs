@@ -241,4 +241,5 @@ export function toolBgHex(toolId)       { return oklchStringToHex(toolBg(toolId)
 export function toolFgHex(toolId)       { return oklchStringToHex(toolFg(toolId)) }
 export function toolFgMutedHex(toolId)  { return oklchStringToHex(toolFgMuted(toolId)) }
 export function toolFgSubtleHex(toolId) { return oklchStringToHex(toolFgSubtle(toolId)) }
+export function toolFgFaintHex(toolId)  { return oklchStringToHex(toolFgFaint(toolId)) }
 export function toolBtnBgHex(toolId)    { return oklchStringToHex(toolBtnBg(toolId)) }
