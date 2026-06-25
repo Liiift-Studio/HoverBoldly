@@ -2,8 +2,18 @@
 // Used by: scripts/sync-sites.mjs (direct import) and shared/lib/toolColors.ts (via import).
 // Pure JS — no TypeScript syntax — so Node.js scripts can import it without a build step.
 // DO NOT duplicate this logic elsewhere. Update here; run npm run sync to propagate.
+//
+// METHOD — adaptive farthest-point sampling.
+// Each tool is placed at the in-gamut OKLCH colour perceptually farthest (max-min ΔE in OKLab)
+// from every tool already placed, so the palette fills the usable colour volume evenly and never
+// clusters. The set of usable lightness TIERS grows automatically with the tool count, so the
+// minimum perceptual distance stays high as the suite scales (~comfortably distinct to ~24 on two
+// tiers, ~80 once the mid tiers switch on). Every tier is contrast-safe: backgrounds darker than
+// TEXT_SPLIT get near-white text, lighter ones get dark text. The solve is deterministic and
+// memoised, and runs only at sync time to write static CSS — sites never recompute it.
 
-/** All tool IDs in canonical order. Append new tools at the end — existing hues stay stable. */
+/** All tool IDs in canonical order. Append new tools at the end — earlier tools keep their colour
+ *  (farthest-point only ever ADDS the next point; existing assignments never move). */
 export const TOOL_IDS = [
 	'axisRhythm',
 	'fitFlush',
@@ -24,45 +34,29 @@ export const TOOL_IDS = [
 	'wrapType',
 ]
 
-const GOLDEN_ANGLE = 137.508
+// ── Tunables ───────────────────────────────────────────────────────────────
+const TEXT_SPLIT   = 0.55   // background L below this → near-white text; at/above → dark text
+const WHITE_C_FRAC = 0.95   // dark / mid-dark backgrounds: push chroma near the gamut max
+const WHITE_C_FLOOR= 0.10
+const DARK_C_CAP   = 0.13   // light / mid-light backgrounds: cap chroma so they read as tints
+const DARK_C_FRAC  = 0.85
+const HUE_STEP     = 2      // candidate hue granularity (degrees)
+const SEED_L       = 0.28   // deterministic first point — a dark red
+const SEED_HUE     = 28
 
-// Progressive tier thresholds — append tools freely, system adapts automatically.
-const TIER_1_MAX = 6   // ≤6 tools: flat, one saturation level
-const TIER_2_MAX = 24  // 7–24 tools: vivid/clay alternation (even = vivid, odd = clay)
-// >24 tools (Tier 3): 4 buckets — dark-vivid, dark-clay, light-vivid, light-pastel
+// Usable lightness tiers, added progressively as the tool count grows.
+const BASE_DARK    = [0.20, 0.24, 0.28, 0.32]  // always present — white text
+const BASE_LIGHT   = [0.835, 0.88, 0.925]      // always present — dark text
+const MID_DARK     = [0.40, 0.46]              // added past MID_DARK_AT — white text (vivid jewel tones)
+const MID_LIGHT    = [0.70, 0.76]              // added past MID_LIGHT_AT — dark text
+const MID_DARK_AT  = 26
+const MID_LIGHT_AT = 44
 
-// Tier 1 — flat
-const T1_L_BG   = 0.14
-const T1_L_BTN  = 0.21
-const T1_FRAC   = 0.88
+// Foreground + text-step lightnesses per text mode.
+const WHITE_FG = 0.97, WHITE_FG_C = 0.008
+const DARK_FG  = 0.26, DARK_FG_C  = 0.055
 
-// Tier 2 vivid (even-index tools)
-const T2V_L_BG   = 0.17
-const T2V_L_BTN  = 0.24
-const T2V_FRAC   = 0.85
-const T2V_FLOOR  = 0.08
-
-// Tier 2 clay (odd-index tools)
-const T2C_L_BG   = 0.12
-const T2C_L_BTN  = 0.19
-const T2C_FRAC   = 0.38
-const T2C_FLOOR  = 0.04
-
-// Tier 3 light-vivid (bucket 2)
-const T3LV_L_BG  = 0.88
-const T3LV_L_BTN = 0.82
-const T3LV_FRAC  = 0.85
-const T3LV_FLOOR = 0.08
-
-// Tier 3 light-pastel (bucket 3)
-const T3LP_L_BG  = 0.93
-const T3LP_L_BTN = 0.87
-const T3LP_C_BG  = 0.06
-const T3LP_C_BTN = 0.04
-
-function hueForIndex(index) {
-	return Math.round((index * GOLDEN_ANGLE) % 360)
-}
+// ── Colour maths ───────────────────────────────────────────────────────────
 
 /** OKLab → linear sRGB (Björn Ottosson's matrices). */
 function oklabToLinearSRGB(L, a, b) {
@@ -90,93 +84,127 @@ function maxInGamutChroma(L, H) {
 	return lo
 }
 
-function tier(n) {
-	if (n <= TIER_1_MAX) return 1
-	if (n <= TIER_2_MAX) return 2
-	return 3
+/** OKLCH (L, C, H°) → OKLab (L, a, b) for perceptual-distance comparison. */
+function toLab(L, C, H) {
+	const h = H * Math.PI / 180
+	return [L, C * Math.cos(h), C * Math.sin(h)]
 }
+
+/** Squared Euclidean distance in OKLab (≈ perceptual ΔE²). */
+function dist2(p, q) {
+	const dL = p[0] - q[0], da = p[1] - q[1], db = p[2] - q[2]
+	return dL * dL + da * da + db * db
+}
+
+// ── Adaptive farthest-point assignment ─────────────────────────────────────
+
+/** Usable lightness levels for a suite of n tools — tiers switch on as n grows. */
+function levelsFor(n) {
+	let Ls = [...BASE_DARK, ...BASE_LIGHT]
+	if (n > MID_DARK_AT) Ls = Ls.concat(MID_DARK)
+	if (n > MID_LIGHT_AT) Ls = Ls.concat(MID_LIGHT)
+	return Ls
+}
+
+/** One colour candidate at (L, H): chroma + text mode follow the tier the lightness sits in. */
+function candidate(L, H) {
+	const white = L < TEXT_SPLIT
+	const C = white
+		? Math.max(WHITE_C_FLOOR, maxInGamutChroma(L, H) * WHITE_C_FRAC)
+		: Math.min(DARK_C_CAP, maxInGamutChroma(L, H) * DARK_C_FRAC)
+	return { L, C, H, white }
+}
+
+let _assignment = null
+/** Greedy farthest-point assignment for the current TOOL_IDS (index → colour). Memoised. */
+function assignment() {
+	if (_assignment) return _assignment
+	const N = TOOL_IDS.length
+	const Ls = levelsFor(N)
+	const cands = []
+	for (let H = 0; H < 360; H += HUE_STEP) for (const L of Ls) cands.push(candidate(L, H))
+	const labs = cands.map((c) => toLab(c.L, c.C, c.H))
+	const chosen = [candidate(SEED_L, SEED_HUE)]
+	const chosenLabs = [toLab(chosen[0].L, chosen[0].C, chosen[0].H)]
+	while (chosen.length < N) {
+		let best = -1, bestMin = -1
+		for (let i = 0; i < cands.length; i++) {
+			let mn = Infinity
+			for (let j = 0; j < chosenLabs.length; j++) {
+				const dd = dist2(labs[i], chosenLabs[j])
+				if (dd < mn) { mn = dd; if (mn <= bestMin) break }
+			}
+			if (mn > bestMin) { bestMin = mn; best = i }
+		}
+		chosen.push(cands[best]); chosenLabs.push(labs[best])
+	}
+	_assignment = chosen
+	return _assignment
+}
+
+/** The assigned colour descriptor { L, C, H, white } for a tool, or null if unknown. */
+function colorFor(toolId) {
+	const i = TOOL_IDS.indexOf(toolId)
+	return i < 0 ? null : assignment()[i]
+}
+
+/** Format an OKLCH triple as a CSS string. */
+function fmt(L, C, H) {
+	return `oklch(${(+L).toFixed(3)} ${(+C).toFixed(4)} ${H})`
+}
+
+// ── Exported colour accessors (signatures unchanged) ───────────────────────
 
 /** --background oklch value for a given tool ID. */
 export function toolBg(toolId) {
-	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.10 0.05 0)'
-	const H = hueForIndex(index)
-	const t = tier(TOOL_IDS.length)
-	if (t === 1) {
-		const C = Math.max(0.03, maxInGamutChroma(T1_L_BG, H) * T1_FRAC).toFixed(4)
-		return `oklch(${T1_L_BG} ${C} ${H})`
-	}
-	if (t === 2) {
-		if (index % 2 === 0) {
-			const C = Math.max(T2V_FLOOR, maxInGamutChroma(T2V_L_BG, H) * T2V_FRAC).toFixed(4)
-			return `oklch(${T2V_L_BG} ${C} ${H})`
-		}
-		const C = Math.max(T2C_FLOOR, maxInGamutChroma(T2C_L_BG, H) * T2C_FRAC).toFixed(4)
-		return `oklch(${T2C_L_BG} ${C} ${H})`
-	}
-	const bucket = index % 4
-	if (bucket === 0) {
-		const C = Math.max(T2V_FLOOR, maxInGamutChroma(T2V_L_BG, H) * T2V_FRAC).toFixed(4)
-		return `oklch(${T2V_L_BG} ${C} ${H})`
-	}
-	if (bucket === 1) {
-		const C = Math.max(T2C_FLOOR, maxInGamutChroma(T2C_L_BG, H) * T2C_FRAC).toFixed(4)
-		return `oklch(${T2C_L_BG} ${C} ${H})`
-	}
-	if (bucket === 2) {
-		const C = Math.max(T3LV_FLOOR, maxInGamutChroma(T3LV_L_BG, H) * T3LV_FRAC).toFixed(4)
-		return `oklch(${T3LV_L_BG} ${C} ${H})`
-	}
-	return `oklch(${T3LP_L_BG} ${T3LP_C_BG} ${H})`
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.10 0.05 0)'
+	return fmt(c.L, c.C, c.H)
 }
 
-/** --btn-bg oklch value for a given tool ID. */
-export function toolBtnBg(toolId) {
-	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.18 0.03 0)'
-	const H = hueForIndex(index)
-	const t = tier(TOOL_IDS.length)
-	if (t === 1) {
-		const C = Math.max(0.02, maxInGamutChroma(T1_L_BTN, H) * T1_FRAC * 0.5).toFixed(4)
-		return `oklch(${T1_L_BTN} ${C} ${H})`
-	}
-	if (t === 2) {
-		if (index % 2 === 0) {
-			const C = Math.max(T2V_FLOOR * 0.6, maxInGamutChroma(T2V_L_BTN, H) * 0.45).toFixed(4)
-			return `oklch(${T2V_L_BTN} ${C} ${H})`
-		}
-		const C = Math.max(T2C_FLOOR * 0.6, maxInGamutChroma(T2C_L_BTN, H) * T2C_FRAC * 0.6).toFixed(4)
-		return `oklch(${T2C_L_BTN} ${C} ${H})`
-	}
-	const bucket = index % 4
-	if (bucket === 0) {
-		const C = Math.max(T2V_FLOOR * 0.6, maxInGamutChroma(T2V_L_BTN, H) * 0.45).toFixed(4)
-		return `oklch(${T2V_L_BTN} ${C} ${H})`
-	}
-	if (bucket === 1) {
-		const C = Math.max(T2C_FLOOR * 0.6, maxInGamutChroma(T2C_L_BTN, H) * T2C_FRAC * 0.6).toFixed(4)
-		return `oklch(${T2C_L_BTN} ${C} ${H})`
-	}
-	if (bucket === 2) {
-		const C = Math.max(T3LV_FLOOR * 0.6, maxInGamutChroma(T3LV_L_BTN, H) * 0.55).toFixed(4)
-		return `oklch(${T3LV_L_BTN} ${C} ${H})`
-	}
-	return `oklch(${T3LP_L_BTN} ${T3LP_C_BTN} ${H})`
-}
-
-/** --foreground oklch value for a given tool ID — dark for light backgrounds, light for dark. */
+/** --foreground oklch value — near-white on dark backgrounds, dark on light backgrounds. */
 export function toolFg(toolId) {
-	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.97 0.008 0)'
-	const H = hueForIndex(index)
-	const t = tier(TOOL_IDS.length)
-	if (t === 3 && index % 4 >= 2) return `oklch(0.18 0.03 ${H})`
-	// Near-white primary text — a whisper of the tool hue for cohesion, but reads as white.
-	return `oklch(0.97 0.008 ${H})`
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.97 0.008 0)'
+	return c.white ? fmt(WHITE_FG, WHITE_FG_C, c.H) : fmt(DARK_FG, DARK_FG_C, c.H)
 }
 
-/** sRGB hex for an OKLCH(L, C, H) triple — for contexts that can't use oklch()
- *  (Satori OG images, static favicon SVGs). Clamps to the sRGB gamut. */
+/** --btn-bg oklch value — a tinted step away from the background (lighter on dark, darker on light). */
+export function toolBtnBg(toolId) {
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.18 0.03 0)'
+	if (c.white) {
+		const bL = Math.min(0.95, c.L + 0.10)
+		return fmt(bL, Math.max(0.03, maxInGamutChroma(bL, c.H) * 0.55), c.H)
+	}
+	const bL = Math.max(0.15, c.L - 0.12)
+	return fmt(bL, Math.min(0.10, maxInGamutChroma(bL, c.H) * 0.70), c.H)
+}
+
+/** Secondary text — solid, readable muted step. Replaces opacity-50/60/70 on text. */
+export function toolFgMuted(toolId) {
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.78 0.025 0)'
+	return c.white ? fmt(0.80, 0.025, c.H) : fmt(0.42, 0.030, c.H)
+}
+
+/** Tertiary text — code samples, captions, recessed body. */
+export function toolFgSubtle(toolId) {
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.66 0.020 0)'
+	return c.white ? fmt(0.68, 0.020, c.H) : fmt(0.52, 0.026, c.H)
+}
+
+/** Decorative text — step numerals, hints. Never body copy. */
+export function toolFgFaint(toolId) {
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.55 0.016 0)'
+	return c.white ? fmt(0.58, 0.016, c.H) : fmt(0.62, 0.022, c.H)
+}
+
+// ── Hex helpers — for contexts that can't use oklch() (Satori OG images, favicons) ─────────────
+
+/** sRGB hex for an OKLCH(L, C, H) triple. Clamps to the sRGB gamut. */
 export function oklchToHex(L, C, H) {
 	const h = H * Math.PI / 180
 	const [lr, lg, lb] = oklabToLinearSRGB(L, C * Math.cos(h), C * Math.sin(h))
@@ -196,37 +224,8 @@ export function oklchStringToHex(str) {
 }
 
 /** Hex shorthands matching the site CSS variables — for OG images and favicons. */
-export function toolBgHex(toolId)     { return oklchStringToHex(toolBg(toolId)) }
-export function toolFgHex(toolId)     { return oklchStringToHex(toolFg(toolId)) }
+export function toolBgHex(toolId)       { return oklchStringToHex(toolBg(toolId)) }
+export function toolFgHex(toolId)       { return oklchStringToHex(toolFg(toolId)) }
 export function toolFgMutedHex(toolId)  { return oklchStringToHex(toolFgMuted(toolId)) }
 export function toolFgSubtleHex(toolId) { return oklchStringToHex(toolFgSubtle(toolId)) }
-export function toolBtnBgHex(toolId)  { return oklchStringToHex(toolBtnBg(toolId)) }
-
-/** Whether the foreground is dark (tier-3 light-background tools). Muted steps move toward the bg. */
-function fgIsDark(index) {
-	return tier(TOOL_IDS.length) === 3 && index % 4 >= 2
-}
-
-/** Secondary text — solid, readable muted step. Replaces opacity-50/60/70 on text. */
-export function toolFgMuted(toolId) {
-	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.78 0.025 0)'
-	const H = hueForIndex(index)
-	return fgIsDark(index) ? `oklch(0.34 0.022 ${H})` : `oklch(0.78 0.025 ${H})`
-}
-
-/** Tertiary text — code samples, captions, recessed body. */
-export function toolFgSubtle(toolId) {
-	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.66 0.020 0)'
-	const H = hueForIndex(index)
-	return fgIsDark(index) ? `oklch(0.46 0.018 ${H})` : `oklch(0.66 0.020 ${H})`
-}
-
-/** Decorative text — step numerals, hints. Never body copy. */
-export function toolFgFaint(toolId) {
-	const index = TOOL_IDS.indexOf(toolId)
-	if (index < 0) return 'oklch(0.55 0.016 0)'
-	const H = hueForIndex(index)
-	return fgIsDark(index) ? `oklch(0.58 0.014 ${H})` : `oklch(0.55 0.016 ${H})`
-}
+export function toolBtnBgHex(toolId)    { return oklchStringToHex(toolBtnBg(toolId)) }

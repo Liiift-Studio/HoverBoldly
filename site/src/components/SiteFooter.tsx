@@ -20,7 +20,7 @@ const GA_ID = "G-L6M7RYHFLG"
 /** Shared footer: tool directory grid, Liiift link, version numbers, GA4 analytics, and cookie consent. */
 export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFooterProps) {
 	return (
-		<footer className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6 pt-8 border-t border-white/10 text-xs">
+		<footer className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6 pt-8 border-t border-foreground/10 text-xs">
 			{/*
 			 * GA4 Consent Mode v2: defaults to denied, restores stored choice, then loads GA4.
 			 * Single script ensures consent is set before the external library initialises.
@@ -85,22 +85,31 @@ export default function SiteFooter({ current, npmVersion, siteVersion }: SiteFoo
 			`}</Script>
 			<Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
 			<ToolDirectory current={current} />
-			<hr className="border-white/10" />
+			<hr className="border-foreground/10" />
 			<div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 text-muted">
 				<a
 					href="https://liiift.studio"
 					target="_blank"
 					rel="noopener noreferrer"
 					aria-label="Liiift Studio"
-					className="w-fit -mx-2 px-2 py-1 rounded hover:bg-white/5 transition-colors"
+					className="w-fit -mx-2 px-2 py-1 rounded hover:bg-foreground/10 transition-colors"
 				>
-					{/* eslint-disable-next-line @next/next/no-img-element -- small static logo; next/image adds no value here */}
-					<img
-						src="/logo-white.png"
-						alt="Liiift Studio"
-						width={47}
-						height={28}
-						className="h-4 w-auto opacity-60 hover:opacity-100 transition-opacity"
+					{/* Logo recoloured via CSS mask so it inherits the foreground colour —
+					    light on dark-background tools, dark on light-background tools. */}
+					<span
+						aria-hidden="true"
+						className="block h-4 w-[27px] opacity-60 hover:opacity-100 transition-opacity"
+						style={{
+							backgroundColor: "currentColor",
+							WebkitMaskImage: "url(/logo-white.png)",
+							maskImage: "url(/logo-white.png)",
+							WebkitMaskRepeat: "no-repeat",
+							maskRepeat: "no-repeat",
+							WebkitMaskSize: "contain",
+							maskSize: "contain",
+							WebkitMaskPosition: "left center",
+							maskPosition: "left center",
+						}}
 					/>
 				</a>
 				<span className="sm:col-start-4 tabular-nums">

@@ -40,18 +40,20 @@ export default function CookieBanner() {
 		<div
 			role="dialog"
 			aria-label="Cookie consent"
-			className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/90 backdrop-blur-sm px-4 py-3 flex flex-col sm:flex-row items-center gap-3 text-xs"
+			// Fixed dark overlay (consistent across all tools) — uses fixed light text, not theme
+			// vars, so it stays legible on both dark- and light-background sites.
+			className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black/90 backdrop-blur-sm px-4 py-3 flex flex-col sm:flex-row items-center gap-3 text-xs text-white"
 		>
-			<p className="flex-1 text-muted">
+			<p className="flex-1 text-white/70">
 				This site uses Google Analytics to understand how visitors use it. No personal data is shared beyond standard GA4 defaults.
 			</p>
 			<div className="flex gap-4 shrink-0">
-				<button onClick={deny} className="px-3 py-1.5 rounded text-muted hover:text-foreground hover:bg-white/5 transition-colors">
+				<button onClick={deny} className="px-3 py-1.5 rounded text-white/70 hover:text-white hover:bg-white/10 transition-colors">
 					Decline
 				</button>
 				<button
 					onClick={grant}
-					className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+					className="px-3 py-1.5 rounded bg-white/15 text-white hover:bg-white/25 transition-colors"
 				>
 					Accept
 				</button>

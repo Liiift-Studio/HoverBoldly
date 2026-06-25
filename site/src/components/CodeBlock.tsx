@@ -65,13 +65,15 @@ export default function CodeBlock({ code }: { code: string }) {
 	}
 
 	return (
-		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(0,0,0,0.35)', outline: '1px solid rgba(255,255,255,0.1)' }}>
+		{/* A consistent dark code island on every site — fixed dark background + light text, so it
+		    reads the same on dark- and light-background tools (themed text would vanish on the block). */}
+		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(18,18,22,0.82)', outline: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.9)' }}>
 			<pre className="overflow-x-auto text-xs leading-relaxed font-mono pr-8">
 				<code>{tokenize(code)}</code>
 			</pre>
 			<button
 				onClick={copy}
-				className="absolute top-3 right-3 p-1.5 rounded text-subtle hover:text-foreground hover:bg-white/5 transition-colors"
+				className="absolute top-3 right-3 p-1.5 rounded text-white/50 hover:text-white hover:bg-white/10 transition-colors"
 				aria-label="Copy code to clipboard"
 			>
 				{copied ? (

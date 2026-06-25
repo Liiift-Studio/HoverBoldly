@@ -82,13 +82,14 @@ input[type="range"] {
 	cursor: pointer;
 	width: 100%;
 	height: 2px;
-	background: rgba(255,255,255,0.15);
+	/* Theme-aware track — tints with the foreground so it stays visible on light-background tools. */
+	background: color-mix(in oklch, var(--foreground) 18%, transparent);
 	border-radius: 1px;
 	outline: none;
 }
 
 input[type="range"]:focus-visible {
-	outline: 2px solid rgba(255,255,255,0.5);
+	outline: 2px solid color-mix(in oklch, var(--foreground) 50%, transparent);
 	outline-offset: 4px;
 	border-radius: 2px;
 }
@@ -106,7 +107,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 input[type="range"]:hover::-webkit-slider-thumb {
-	background: #ffffff;
+	background: var(--foreground);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -120,7 +121,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 input[type="range"]:hover::-moz-range-thumb {
-	background: #ffffff;
+	background: var(--foreground);
 }
 
 /* Larger thumb on touch devices.
