@@ -64,16 +64,17 @@ export default function CodeBlock({ code }: { code: string }) {
 		} catch {}
 	}
 
-	// A consistent dark code island on every site — fixed dark background + light text, so it reads
-	// the same on dark- and light-background tools (themed text would otherwise vanish on the block).
+	// Theme-aware code surface — the tool's --panel with its foreground text, so it harmonises with
+	// the page (a tinted-light block on light tools, a tinted-dark block on dark tools) instead of a
+	// jarring neutral-black island. Syntax tokens inherit currentColor, so they adapt with it.
 	return (
-		<div className="relative rounded-lg px-5 py-4" style={{ background: 'rgba(18,18,22,0.82)', outline: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.9)' }}>
+		<div className="relative rounded-lg px-5 py-4" style={{ background: 'var(--panel)', outline: '1px solid color-mix(in oklch, var(--foreground) 14%, transparent)', color: 'var(--foreground)' }}>
 			<pre className="overflow-x-auto text-xs leading-relaxed font-mono pr-8">
 				<code>{tokenize(code)}</code>
 			</pre>
 			<button
 				onClick={copy}
-				className="absolute top-3 right-3 p-1.5 rounded text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+				className="absolute top-3 right-3 p-1.5 rounded text-subtle hover:text-foreground hover:bg-foreground/10 transition-colors"
 				aria-label="Copy code to clipboard"
 			>
 				{copied ? (
