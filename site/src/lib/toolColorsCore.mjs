@@ -194,6 +194,20 @@ export function toolBtnBg(toolId) {
 	return fmt(bL, Math.min(0.10, maxInGamutChroma(bL, c.H) * 0.70), c.H)
 }
 
+/** --panel: a readable, hue-matched card surface. On light tools it's a darker, MORE saturated tint
+ *  of the hue (so cards clearly read as the tool's colour, never muddy); on dark tools a slightly
+ *  lighter hue tint (a raised panel). Replaces neutral black/white overlays in demos. */
+export function toolPanel(toolId) {
+	const c = colorFor(toolId)
+	if (!c) return 'oklch(0.16 0.04 0)'
+	if (c.white) {
+		const L = Math.min(0.42, c.L + 0.07)
+		return fmt(L, Math.max(0.03, maxInGamutChroma(L, c.H) * 0.5), c.H)
+	}
+	const L = Math.max(0.78, lightDisplayL(c.L) - 0.09)
+	return fmt(L, Math.min(0.16, maxInGamutChroma(L, c.H) * 0.85), c.H)
+}
+
 /** Secondary text — solid, readable muted step. Replaces opacity-50/60/70 on text. */
 export function toolFgMuted(toolId) {
 	const c = colorFor(toolId)
