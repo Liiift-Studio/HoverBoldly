@@ -3,11 +3,11 @@
 @import "./base.css";
 
 :root {
-	--background: oklch(0.920 0.0635 80);
+	--background: oklch(0.900 0.0801 80);
 	--foreground: oklch(0.260 0.0550 80);
 	--foreground-muted: oklch(0.420 0.0300 80);
 	--foreground-subtle: oklch(0.520 0.0260 80);
 	--foreground-faint: oklch(0.620 0.0220 80);
-	--btn-bg: oklch(0.780 0.1000 80);
-	--panel: oklch(0.830 0.1412 80);
+	--btn-bg: oklch(0.760 0.1000 80);
+	--panel: oklch(0.810 0.1430 80);
 }

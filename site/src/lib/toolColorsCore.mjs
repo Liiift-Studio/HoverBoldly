@@ -49,8 +49,8 @@ const BASE_DARK    = [0.20, 0.24, 0.28, 0.32]  // always present — white text
 const BASE_LIGHT   = [0.835, 0.88, 0.925]      // solve levels — kept stable so the assignment doesn't reshuffle
 // Light backgrounds are LIFTED to a lighter display band at render time (more text contrast) without
 // changing the solve — so which tool is light/dark and its hue stay fixed. Maps [0.835,0.925] → this.
-const LIGHT_DISP_LO = 0.92
-const LIGHT_DISP_HI = 0.975
+const LIGHT_DISP_LO = 0.90
+const LIGHT_DISP_HI = 0.95
 const MID_DARK     = [0.40, 0.46]              // added past MID_DARK_AT — white text (vivid jewel tones)
 const MID_LIGHT    = [0.70, 0.76]              // added past MID_LIGHT_AT — dark text
 const MID_DARK_AT  = 26
