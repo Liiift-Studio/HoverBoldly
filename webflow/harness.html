@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!-- webflow/harness.html — local proof page for the hoverBoldly Webflow embed bundle. -->
+<!-- Serve this directory over HTTP (e.g. `npx serve .` from the repo root) and open this file, -->
+<!-- or open it directly — it references the built bundle at ../dist/hoverboldly.webflow.min.js. -->
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>hoverBoldly — Webflow embed harness</title>
+	<!-- Roboto Flex: a variable font exposing wght (and slnt) so the hover weight shift is visible. -->
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght,slnt@8..144,100..1000,-10..0&display=swap" rel="stylesheet" />
+	<style>
+		body {
+			font-family: "Roboto Flex", system-ui, sans-serif;
+			max-width: 40rem;
+			margin: 4rem auto;
+			padding: 0 1.5rem;
+			line-height: 1.6;
+			background: #faf8f5;
+			color: #1a1a1a;
+		}
+		h1 { font-size: 1.1rem; font-weight: 500; color: #666; margin-bottom: 2rem; }
+		.demo { font-size: 2rem; font-weight: 400; margin: 2rem 0; cursor: default; }
+		.note { font-size: 0.85rem; color: #777; border-top: 1px solid #ddd; padding-top: 1rem; margin-top: 3rem; }
+		code { background: #eee; padding: 0.1em 0.35em; border-radius: 3px; font-size: 0.85em; }
+	</style>
+</head>
+<body>
+	<h1>hoverBoldly Webflow embed — local harness</h1>
+
+	<!-- Element mode: whole line bolds on hover, letter-spacing compensates so width never shifts. -->
+	<p class="demo"
+		data-hoverboldly
+		data-hb-mode="element"
+		data-hb-normal-weight="400"
+		data-hb-hover-weight="800"
+		data-hb-transition-duration="180">
+		Hover this line and it bolds without reflow.
+	</p>
+
+	<!-- Word mode: each word is its own hover target, with a small forward false slant. -->
+	<p class="demo"
+		data-hoverboldly
+		data-hb-mode="word"
+		data-hb-hover-weight="750"
+		data-hb-false-slant-hover-deg="-8">
+		Each word here reacts on its own.
+	</p>
+
+	<!-- Proximity mode: per-line weight fades with cursor distance; extra slnt axis driven too. -->
+	<p class="demo"
+		data-hoverboldly
+		data-hb-mode="proximity"
+		data-hb-hover-weight="900"
+		data-hb-proximity-threshold="140"
+		data-hb-axes='{"slnt":{"normal":0,"hover":-10}}'>
+		Move the cursor near these words and the closest line grows heaviest while the
+		neighbours fade back — weight tracks distance continuously across the paragraph.
+	</p>
+
+	<p class="note">
+		<strong>What "working" looks like:</strong> Hovering the first line thickens the whole
+		line while the text stays exactly the same width (no neighbouring content jumps). In the
+		second block each word bolds and leans independently under the pointer. In the third block
+		the line nearest the cursor is the boldest and most slanted, fading smoothly with distance.
+		Open the console — <code>window.HoverBoldly</code> should expose
+		<code>init</code>, <code>destroy</code>, and <code>restart</code>. Reduced-motion users see
+		the weight change with the transition duration collapsed to 0 (handled by the core).
+	</p>
+
+	<!-- The built IIFE bundle: auto-inits on DOMContentLoaded + document.fonts.ready. -->
+	<script src="../dist/hoverboldly.webflow.min.js"></script>
+</body>
+</html>
