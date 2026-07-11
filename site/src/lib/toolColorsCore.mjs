@@ -32,6 +32,7 @@ export const TOOL_IDS = [
 	'typsettle',
 	'vfClamp',
 	'wrapType',
+	'threadText',
 ]
 
 // ── Tunables ───────────────────────────────────────────────────────────────

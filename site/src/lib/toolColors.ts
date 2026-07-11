@@ -25,6 +25,7 @@ export const TOOL_IDS = [
 	'typsettle',
 	'vfClamp',
 	'wrapType',
+	'threadText',
 ] as const
 
 export type ToolId = typeof TOOL_IDS[number]
