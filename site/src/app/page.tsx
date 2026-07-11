@@ -6,6 +6,7 @@ import ToolDirectory from "@/components/ToolDirectory"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
 import SiteFooter from "../components/SiteFooter"
+import PortsSection from "../components/PortsSection"
 import { MagnetChar } from "@liiift-studio/magnettype"
 
 export default function Home() {
@@ -131,6 +132,14 @@ cleanup()`} />
 					</div>
 				</div>
 			</section>
+
+			<PortsSection
+				npm="@liiift-studio/hoverboldly"
+				bundle="hoverboldly"
+				attr="data-hoverboldly"
+				framerComponent="HoverBoldly"
+				repo="Liiift-Studio/HoverBoldly"
+			/>
 
 			<SiteFooter current="hoverBoldly" npmVersion={version} siteVersion={siteVersion} />
 
