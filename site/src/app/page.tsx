@@ -136,7 +136,7 @@ cleanup()`} />
 			<PortsSection
 				npm="@liiift-studio/hoverboldly"
 				bundle="hoverboldly"
-				attr="data-hoverboldly"
+				attr="data-hoverboldly" figma="frozen"
 				framerComponent="HoverBoldly"
 				repo="Liiift-Studio/HoverBoldly"
 			/>
