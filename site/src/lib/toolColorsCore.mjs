@@ -33,6 +33,7 @@ export const TOOL_IDS = [
 	'vfClamp',
 	'wrapType',
 	'threadText',
+	'cedars',
 ]
 
 // ── Tunables ───────────────────────────────────────────────────────────────
@@ -147,8 +148,17 @@ function assignment() {
 	return _assignment
 }
 
+/** Pinned overrides — tools that keep a hand-picked identity instead of the auto-solved colour.
+ *  CEDARS ships its own amber-on-charcoal site design (plain CSS, outside the synced kit); here we
+ *  give it a warm amber-hue DARK family theme so its footer entry and hover-preview read warm and
+ *  dark to match the site, rather than the auto-assigned slot. white:true → near-white text. */
+const PINNED = {
+	cedars: { L: 0.16, C: 0.045, H: 75, white: true },
+}
+
 /** The assigned colour descriptor { L, C, H, white } for a tool, or null if unknown. */
 function colorFor(toolId) {
+	if (PINNED[toolId]) return PINNED[toolId]
 	const i = TOOL_IDS.indexOf(toolId)
 	return i < 0 ? null : assignment()[i]
 }

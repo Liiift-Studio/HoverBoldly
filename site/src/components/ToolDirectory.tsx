@@ -7,6 +7,7 @@ import { toolBg, toolFg, toolFgMuted, toolFgSubtle, toolFgFaint, toolPanel, tool
 
 const TOOLS = [
 	{ name: "Axis Rhythm",    url: "https://axisrhythm.com",                    id: "axisRhythm",    desc: "Alternates variable font axes per line for rhythmic texture",         short: "Per-line axis rhythm"   },
+	{ name: "CEDARS+",        url: "https://cedarstype.com",                     id: "cedars",        desc: "Reads a CEDARS-style typographic profile from a font's outline geometry", short: "Type profile from geometry" },
 	{ name: "Fit Flush",      url: "https://fit-flush.com",                      id: "fitFlush",      desc: "Expands tracking and axes to flush-fill a container",                  short: "Flush-fill container"   },
 	{ name: "Fit Width",      url: "https://fitwidth.com",                       id: "fitWidth",      desc: "Scales tracking and axes to fill the full display width",              short: "Fill display width"     },
 	{ name: "Flood Text",     url: "https://floodtext.com",                      id: "floodText",     desc: "Animates variable font axes in waves across each character",           short: "Per-char wave"          },
