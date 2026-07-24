@@ -2,6 +2,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
+import SiteHeader from "../components/SiteHeader"
 
 // Use locally-hosted Inter to avoid build-time network requests to Google Fonts
 const inter = localFont({
@@ -45,7 +46,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 	return (
 		<html lang="en" className={`h-full antialiased ${inter.variable}`}>
-			<body className="min-h-full flex flex-col">{children}</body>
+			<body className="min-h-full flex flex-col">
+				<SiteHeader current="hoverBoldly" githubUrl="https://github.com/Liiift-Studio/HoverBoldly" />{children}</body>
 		</html>
 	)
 }
