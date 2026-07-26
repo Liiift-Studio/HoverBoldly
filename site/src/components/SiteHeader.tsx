@@ -41,49 +41,56 @@ export default function SiteHeader({ current, sections = [], npmUrl, githubUrl, 
 			style={{ background: 'color-mix(in srgb, var(--background) 82%, transparent)', backdropFilter: 'saturate(140%) blur(10px)' }}
 			onMouseLeave={() => setOpen(false)}
 		>
-			<div className="mx-auto w-full max-w-2xl lg:max-w-5xl px-6 h-14 flex items-center justify-between gap-6">
-				<a href="/" className="text-lg font-semibold tracking-tight" style={{ fontFamily: 'var(--font-merriweather, Merriweather, serif)', color: 'var(--foreground)' }}>
-					{name}
-				</a>
+			{/* px-6 wraps OUTSIDE the max-w container to match <main> in every page.tsx —
+			    padding inside the container would inset the wordmark 24px further than the
+			    body copy below it. The wrapper keeps border-b spanning the full width. */}
+			<div className="w-full px-6">
+				<div className="mx-auto w-full max-w-2xl lg:max-w-5xl h-14 flex items-center justify-between gap-6">
+					<a href="/" className="text-lg font-semibold tracking-tight" style={{ fontFamily: 'var(--font-merriweather, Merriweather, serif)', color: 'var(--foreground)' }}>
+						{name}
+					</a>
 
-				<nav className="flex items-center gap-5 text-sm" style={{ color: 'var(--foreground-muted)' }}>
-					{sections.map((s) => (
-						<a key={s.href} href={s.href} className="hidden sm:inline hover:text-[var(--foreground)]" style={{ color: 'inherit', textDecoration: 'none' }}>
-							{s.label}
-						</a>
-					))}
+					<nav className="flex items-center gap-5 text-sm" style={{ color: 'var(--foreground-muted)' }}>
+						{sections.map((s) => (
+							<a key={s.href} href={s.href} className="hidden sm:inline hover:text-[var(--foreground)]" style={{ color: 'inherit', textDecoration: 'none' }}>
+								{s.label}
+							</a>
+						))}
 
-					{/* Family switcher — the meaningful core: jump to any sibling from anywhere. */}
-					<button
-						type="button"
-						aria-expanded={open}
-						aria-haspopup="true"
-						onClick={() => setOpen((o) => !o)}
-						className="inline-flex items-center gap-1 hover:text-[var(--foreground)]"
-						style={{ color: open ? 'var(--foreground)' : 'inherit', background: 'none', border: 'none', font: 'inherit', cursor: 'pointer' }}
-					>
-						Type Tools <span style={{ fontSize: '0.8em', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</span>
-					</button>
+						{/* Family switcher — the meaningful core: jump to any sibling from anywhere. */}
+						<button
+							type="button"
+							aria-expanded={open}
+							aria-haspopup="true"
+							onClick={() => setOpen((o) => !o)}
+							className="inline-flex items-center gap-1 hover:text-[var(--foreground)]"
+							style={{ color: open ? 'var(--foreground)' : 'inherit', background: 'none', border: 'none', font: 'inherit', cursor: 'pointer' }}
+						>
+							Type Tools <span style={{ fontSize: '0.8em', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>▾</span>
+						</button>
 
-					{npmUrl && (
-						<a href={npmUrl} target="_blank" rel="noreferrer" className="hidden sm:inline hover:text-[var(--foreground)]" style={{ color: 'inherit', textDecoration: 'none' }}>
-							npm ↗
-						</a>
-					)}
-					{githubUrl && (
-						<a href={githubUrl} target="_blank" rel="noreferrer" className="hover:text-[var(--foreground)]" style={{ color: 'inherit', textDecoration: 'none' }}>
-							GitHub ↗
-						</a>
-					)}
-				</nav>
+						{npmUrl && (
+							<a href={npmUrl} target="_blank" rel="noreferrer" className="hidden sm:inline hover:text-[var(--foreground)]" style={{ color: 'inherit', textDecoration: 'none' }}>
+								npm ↗
+							</a>
+						)}
+						{githubUrl && (
+							<a href={githubUrl} target="_blank" rel="noreferrer" className="hover:text-[var(--foreground)]" style={{ color: 'inherit', textDecoration: 'none' }}>
+								GitHub ↗
+							</a>
+						)}
+					</nav>
+				</div>
 			</div>
 
 			{/* Family panel — reuses the ToolDirectory grid (all tools, current highlighted). */}
 			{open && (
 				<div className="border-t border-foreground/10" style={{ background: 'var(--background)' }}>
-					<div className="mx-auto w-full max-w-2xl lg:max-w-5xl px-6 py-7">
-						<p className="text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--foreground-faint)' }}>The Type Tools family</p>
-						<ToolDirectory current={current} />
+					<div className="w-full px-6">
+						<div className="mx-auto w-full max-w-2xl lg:max-w-5xl py-7">
+							<p className="text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--foreground-faint)' }}>The Type Tools family</p>
+							<ToolDirectory current={current} />
+						</div>
 					</div>
 				</div>
 			)}

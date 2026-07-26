@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
 	// Prevent Pyodide-based packages from being bundled by webpack — they require
 	// Node.js fs APIs and use dynamic requires that the bundler cannot analyse.
 	// Harmless on tools that don't install these packages.
-	serverExternalPackages: ["@web-alchemy/fonttools", "vf-clamp"],
+	serverExternalPackages: ["@web-alchemy/fonttools", "vf-clamp", "@neondatabase/serverless"],
 	headers: () => Promise.resolve([
 		{ source: "/(.*)", headers: securityHeaderList },
 	]),
