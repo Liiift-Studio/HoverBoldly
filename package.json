@@ -78,7 +78,7 @@
 	"homepage": "https://hoverboldly.com",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Liiift-Studio/HoverBoldly.git"
+		"url": "git+https://github.com/Liiift-Studio/HoverBoldly.git"
 	},
 	"bugs": {
 		"url": "https://github.com/Liiift-Studio/HoverBoldly/issues"
