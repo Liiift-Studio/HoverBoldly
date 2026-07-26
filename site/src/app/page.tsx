@@ -118,15 +118,15 @@ cleanup()`} />
 									<th className="pb-2 font-normal">Description</th>
 								</tr>
 							</thead>
-							<tbody className="text-muted">
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">normalWeight</td><td className="py-2 pr-6">computed</td><td className="py-2">Font weight at rest.</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">hoverWeight</td><td className="py-2 pr-6">700</td><td className="py-2">Font weight on hover.</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">transitionDuration</td><td className="py-2 pr-6">150</td><td className="py-2">Transition duration in milliseconds.</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">mode</td><td className="py-2 pr-6">&apos;element&apos;</td><td className="py-2">&apos;element&apos; = whole element bolds on hover. &apos;word&apos; = individual word hover targets. &apos;proximity&apos; = weight increases per line based on cursor distance, fading with distance.</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">proximityThreshold</td><td className="py-2 pr-6">120</td><td className="py-2">Distance in px from a line&apos;s centre over which weight fades. Only used in &apos;proximity&apos; mode.</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">resizeObserver</td><td className="py-2 pr-6">true</td><td className="py-2">Re-measure compensation when the element&apos;s size changes (e.g. responsive font-size).</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">axes</td><td className="py-2 pr-6">—</td><td className="py-2">Additional variable font axes to drive on hover (e.g. slnt, wdth). Each key is an OpenType axis tag with normal/hover values.</td></tr>
-								<tr className="border-t border-foreground/10 hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">falseSlant</td><td className="py-2 pr-6">—</td><td className="py-2">Fake italic via CSS skewX() for fonts without a slnt axis. Provide <code>hoverDeg</code> (and optionally <code>normalDeg</code>).</td></tr>
+							<tbody className="text-muted zebra-bleed">
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">normalWeight</td><td className="py-2 pr-6">computed</td><td className="py-2">Font weight at rest.</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">hoverWeight</td><td className="py-2 pr-6">700</td><td className="py-2">Font weight on hover.</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">transitionDuration</td><td className="py-2 pr-6">150</td><td className="py-2">Transition duration in milliseconds.</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">mode</td><td className="py-2 pr-6">&apos;element&apos;</td><td className="py-2">&apos;element&apos; = whole element bolds on hover. &apos;word&apos; = individual word hover targets. &apos;proximity&apos; = weight increases per line based on cursor distance, fading with distance.</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">proximityThreshold</td><td className="py-2 pr-6">120</td><td className="py-2">Distance in px from a line&apos;s centre over which weight fades. Only used in &apos;proximity&apos; mode.</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">resizeObserver</td><td className="py-2 pr-6">true</td><td className="py-2">Re-measure compensation when the element&apos;s size changes (e.g. responsive font-size).</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">axes</td><td className="py-2 pr-6">—</td><td className="py-2">Additional variable font axes to drive on hover (e.g. slnt, wdth). Each key is an OpenType axis tag with normal/hover values.</td></tr>
+								<tr className="hover:bg-foreground/5 transition-colors"><td className="py-2 pr-6 font-mono">falseSlant</td><td className="py-2 pr-6">—</td><td className="py-2">Fake italic via CSS skewX() for fonts without a slnt axis. Provide <code>hoverDeg</code> (and optionally <code>normalDeg</code>).</td></tr>
 							</tbody>
 						</table>
 					</div>

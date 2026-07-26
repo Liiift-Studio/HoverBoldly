@@ -49,6 +49,9 @@ body {
 	/* Prevent browser scroll-anchor algorithm from snapping to 0 when
 	   DOM mutations change element heights (gyro/cursor/animation modes) */
 	overflow-anchor: none;
+	/* Contain full-viewport (.zebra-bleed) overlays so a 100vw band can't create a horizontal
+	   scrollbar. `clip` (unlike `hidden`) doesn't create a scroll container, so sticky headers work. */
+	overflow-x: clip;
 	text-rendering: optimizeLegibility;
 	transition: background-color 500ms ease;
 }
@@ -59,6 +62,73 @@ body {
 }
 *::-webkit-scrollbar {
 	display: none;
+}
+
+/* Zebra shading for tabular-looking content — lists, grids, or tables of repeated same-shape items.
+   Theme-aware (the wash tints with the foreground, so it works on dark and light tools) and purely
+   visual (sits on the item's own background, never intercepts pointer events). Two variants:
+
+   .zebra        — ROW lists / table <tbody>. Alternate rows get a full-bleed squared wash that
+                   extends into the container's padding (via --zebra-pad; default 20px = the standard
+                   .panel padding — set --zebra-pad on the container if yours differs). Reads like
+                   real table rows rather than inset pills.
+   .zebra-cells  — GRID of cells. Alternate cells get a contained squared wash (no negative margin,
+                   so grid tracks aren't disturbed). */
+:root {
+	--zebra: color-mix(in oklch, var(--foreground) 4%, transparent);
+	/* Horizontal bleed for banded rows + section-header bars — equals the standard .panel padding, so
+	   a band inside a panel reaches the panel's inner edges. Override on a container if yours differs. */
+	--zebra-pad: 20px;
+}
+.zebra > * {
+	padding-block: 12px;
+	padding-inline: var(--zebra-pad);
+	margin-inline: calc(-1 * var(--zebra-pad));
+}
+.zebra > *:nth-child(even) {
+	background: var(--zebra);
+}
+.zebra-cells > * {
+	padding: 12px 10px;
+}
+.zebra-cells > *:nth-child(even) {
+	background: var(--zebra);
+}
+
+/* Full-viewport bleed for PAGE-LEVEL banded content (a table sitting directly on the page, not inside
+   a panel): the wash on alternate rows spans the whole browser width via a behind-content overlay —
+   the outermost boundary — with no layout shift and no top/bottom rules. Body sets overflow-x: clip so
+   the 100vw overlay can't add a horizontal scrollbar. */
+.zebra-bleed > * {
+	position: relative;
+	padding-block: 12px;
+}
+.zebra-bleed > *:nth-child(even)::before {
+	content: "";
+	position: absolute;
+	inset-block: 0;
+	left: 50%;
+	width: 100vw;
+	transform: translateX(-50%);
+	background: var(--zebra);
+	z-index: -1;
+	pointer-events: none;
+}
+
+/* Section header as a full-bleed KNOCKOUT BAR: a solid foreground band spanning the container, with
+   the label reversed out in the background colour. Uppercase + tracked. Theme-aware (inverts with the
+   tool's fg/bg). Full-width to the container's padding (--zebra-pad), matching the banded rows below. */
+.eyebrow {
+	display: block;
+	background: var(--foreground);
+	color: var(--background);
+	font-size: 0.72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	padding: 6px var(--zebra-pad);
+	margin-inline: calc(-1 * var(--zebra-pad));
+	margin-block: 0 14px;
 }
 
 /* Typographic defaults */
