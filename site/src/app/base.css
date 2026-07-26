@@ -81,7 +81,7 @@ body {
 	--zebra-pad: 20px;
 }
 .zebra > * {
-	padding-block: 12px;
+	padding-block: 16px;
 	padding-inline: var(--zebra-pad);
 	margin-inline: calc(-1 * var(--zebra-pad));
 }
@@ -126,9 +126,11 @@ body {
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.16em;
-	padding: 6px var(--zebra-pad);
-	margin-inline: calc(-1 * var(--zebra-pad));
-	margin-block: 0 14px;
+	padding: 8px var(--zebra-pad);
+	/* Bleed to the panel's top + side edges so the bar is flush with the panel (assumes the header is
+	   the first child of a padded container); round the top corners to match the panel's radius. */
+	margin: calc(-1 * var(--zebra-pad)) calc(-1 * var(--zebra-pad)) 14px;
+	border-radius: var(--radius, 12px) var(--radius, 12px) 0 0;
 }
 
 /* Typographic defaults */
