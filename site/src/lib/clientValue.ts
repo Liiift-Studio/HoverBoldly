@@ -26,9 +26,15 @@ export function useClientValue<T>(read: () => T, serverValue: T): T {
 
 /**
  * Track a CSS media query, updating if it changes (viewport resize, device rotation,
- * plugging in a mouse). Returns false during SSR and hydration.
+ * plugging in a mouse).
+ *
+ * @param query       - Any CSS media query string.
+ * @param serverValue - Result during SSR and hydration. Defaults to false ("feature absent"),
+ *                      which is right for capability probes. Pass true where the pre-hydration
+ *                      default should be the matched state — e.g. a dark-by-default surface,
+ *                      where false would flash light before correcting.
  */
-export function useMediaQuery(query: string): boolean {
+export function useMediaQuery(query: string, serverValue = false): boolean {
 	return useSyncExternalStore(
 		(onChange) => {
 			const mql = window.matchMedia(query)
@@ -36,6 +42,6 @@ export function useMediaQuery(query: string): boolean {
 			return () => mql.removeEventListener('change', onChange)
 		},
 		() => window.matchMedia(query).matches,
-		() => false,
+		() => serverValue,
 	)
 }

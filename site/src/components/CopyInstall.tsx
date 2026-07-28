@@ -1,17 +1,17 @@
 "use client"
 
-// Click-to-copy npm install snippet with a link to the npm package page
+// Click-to-copy `npm install <pkg>` snippet with a link to the package's npm page.
+// Shared across all Type Tools sites — synced by sync-sites.mjs; edit here, not in a submodule.
 import { useState } from "react"
 
-const CMD = "npm install @liiift-studio/hoverboldly"
-const NPM_URL = "https://www.npmjs.com/package/@liiift-studio/hoverboldly"
-
-/** Displays the install command, copies it to clipboard on click, and links to npm */
-export default function CopyInstall() {
+/** Shows `npm install <pkg>`, copies it to the clipboard on click, and links to npm. */
+export default function CopyInstall({ pkg }: { pkg: string }) {
 	const [copied, setCopied] = useState(false)
+	const cmd = `npm install ${pkg}`
+	const npmUrl = `https://www.npmjs.com/package/${pkg}`
 
 	function handleCopy() {
-		navigator.clipboard.writeText(CMD).then(() => {
+		navigator.clipboard.writeText(cmd).then(() => {
 			setCopied(true)
 			setTimeout(() => setCopied(false), 2000)
 		}).catch(() => {
@@ -26,13 +26,11 @@ export default function CopyInstall() {
 				title="Copy to clipboard"
 				className="flex items-center gap-2 text-sm bg-foreground/10 hover:bg-foreground/20 active:bg-foreground/30 px-3 py-1.5 rounded font-mono transition-colors cursor-pointer select-all"
 			>
-				<span>{CMD}</span>
-				<span className="opacity-50 text-xs transition-opacity">
-					{copied ? "✓" : "⎘"}
-				</span>
+				<span>{cmd}</span>
+				<span className="opacity-50 text-xs transition-opacity">{copied ? "✓" : "⎘"}</span>
 			</button>
 			<a
-				href={NPM_URL}
+				href={npmUrl}
 				target="_blank"
 				rel="noopener noreferrer"
 				className="text-sm opacity-50 hover:opacity-100 transition-opacity"
