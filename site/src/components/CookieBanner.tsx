@@ -4,34 +4,82 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 
 const STORAGE_KEY = 'cookie-consent'
 
+/**
+ * Sentinel returned during SSR and hydration. Any non-null snapshot hides the banner, so the
+ * server never renders it — matching the previous behaviour where the banner appeared only
+ * after mount. Prevents a flash of the banner for visitors who already chose.
+ */
+const SSR_SNAPSHOT = 'ssr'
+
+/** Sentinel for blocked storage (Safari private mode, embedded webviews) — stays hidden. */
+const BLOCKED_SNAPSHOT = 'blocked'
+
+/** Subscribers to consent changes. localStorage has no same-tab change event, so writes notify here. */
+const listeners = new Set<() => void>()
+
+/** Notify every mounted banner that the stored consent value changed. */
+function emitConsentChange(): void {
+	listeners.forEach((l) => l())
+}
+
+/**
+ * Subscribe to consent changes: local writes via the listener set, other tabs via `storage`.
+ * Returns the unsubscribe function required by useSyncExternalStore.
+ */
+function subscribe(onStoreChange: () => void): () => void {
+	listeners.add(onStoreChange)
+	window.addEventListener('storage', onStoreChange)
+	return () => {
+		listeners.delete(onStoreChange)
+		window.removeEventListener('storage', onStoreChange)
+	}
+}
+
+/**
+ * Current consent value, or null when the visitor has not chosen yet (the only state that
+ * shows the banner). Returns a primitive so useSyncExternalStore's identity check is stable.
+ */
+function getSnapshot(): string | null {
+	try {
+		return localStorage.getItem(STORAGE_KEY)
+	} catch {
+		return BLOCKED_SNAPSHOT
+	}
+}
+
+/** Server snapshot — always non-null so the banner is never server-rendered. */
+function getServerSnapshot(): string {
+	return SSR_SNAPSHOT
+}
+
+/** Persist a consent choice and notify subscribers so the banner re-reads and hides. */
+function persistConsent(value: 'granted' | 'denied'): void {
+	try { localStorage.setItem(STORAGE_KEY, value) } catch { /* storage blocked — choice is session-only */ }
+	emitConsentChange()
+}
+
 /** Cookie consent banner. Shows once per browser; persists choice to localStorage. */
 export default function CookieBanner() {
-	const [visible, setVisible] = useState(false)
-
-	useEffect(() => {
-		try {
-			if (!localStorage.getItem(STORAGE_KEY)) setVisible(true)
-		} catch { /* storage blocked — stay hidden */ }
-	}, [])
+	// Derived straight from the external store — no effect, so no cascading render on mount.
+	const consent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+	const visible = consent === null
 
 	function grant() {
-		try { localStorage.setItem(STORAGE_KEY, 'granted') } catch { /* */ }
+		persistConsent('granted')
 		// Update GA4 Consent Mode v2 for the current session if already loaded
 		if (typeof (window as unknown as Window & { gtag?: (...args: unknown[]) => void }).gtag === 'function') {
 			(window as unknown as Window & { gtag: (...args: unknown[]) => void }).gtag(
 				'consent', 'update', { analytics_storage: 'granted' }
 			)
 		}
-		setVisible(false)
 	}
 
 	function deny() {
-		try { localStorage.setItem(STORAGE_KEY, 'denied') } catch { /* */ }
-		setVisible(false)
+		persistConsent('denied')
 	}
 
 	if (!visible) return null

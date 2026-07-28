@@ -9,6 +9,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import ToolDirectory, { TOOLS } from './ToolDirectory'
 
 /** A per-tool in-page section anchor (e.g. cedars: Analyzer / Discover / Engine). */
@@ -46,9 +47,9 @@ export default function SiteHeader({ current, sections = [], npmUrl, githubUrl, 
 			    body copy below it. The wrapper keeps border-b spanning the full width. */}
 			<div className="w-full px-6">
 				<div className="mx-auto w-full max-w-2xl lg:max-w-5xl h-14 flex items-center justify-between gap-6">
-					<a href="/" className="text-lg font-semibold tracking-tight" style={{ fontFamily: 'var(--font-merriweather, Merriweather, serif)', color: 'var(--foreground)' }}>
+					<Link href="/" className="text-lg font-semibold tracking-tight" style={{ fontFamily: 'var(--font-merriweather, Merriweather, serif)', color: 'var(--foreground)' }}>
 						{name}
-					</a>
+					</Link>
 
 					<nav className="flex items-center gap-5 text-sm" style={{ color: 'var(--foreground-muted)' }}>
 						{sections.map((s) => (
