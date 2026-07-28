@@ -56,6 +56,20 @@ body {
 	transition: background-color 500ms ease;
 }
 
+/* Theme-preview cross-fade. When a footer tool is hovered, ToolDirectory swaps every themed CSS
+   variable on :root to preview that tool's palette. The variables flip instantly, so without this
+   each element's resolved colour / background / border would snap while only the body background
+   (above) eased — the mismatch where the background glides but the tool names, header, panels, and
+   borders jump. ToolDirectory adds `.theme-preview` to <html> for the duration of a preview; this
+   eases every themed property at the same 500ms so the whole page cross-fades as one unit. Scoped to
+   preview time (not applied globally) so normal hovers and button states stay snappy. */
+:root.theme-preview,
+:root.theme-preview * {
+	transition-property: color, background-color, border-color, fill, stroke, outline-color;
+	transition-duration: 500ms;
+	transition-timing-function: ease;
+}
+
 /* Hide all scrollbars while keeping scroll functionality */
 * {
 	scrollbar-width: none;
