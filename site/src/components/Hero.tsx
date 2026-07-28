@@ -22,8 +22,12 @@ interface HeroProps {
 	eyebrow: string
 	/** The big serif H1; one MagnetChar-animated line per entry (usually two). */
 	title: HeroTitleLine[]
-	/** Rest weight of the H1 letters (default 300). */
+	/** Static weight of the H1 CSS (default 300). Note: the MagnetChar rest weight stays 300. */
 	titleWeight?: number
+	/** H1 display face (default Merriweather). opszStepper overrides this with Cormorant Display. */
+	titleFontFamily?: string
+	/** opsz axis for the H1 static style; pass null to omit it (opszStepper's face has no opsz). Default 144. */
+	titleOpsz?: number | null
 	/** npm package for the install snippet, e.g. "@liiift-studio/magnettype". */
 	install: string
 	/** GitHub repository URL. */
@@ -35,13 +39,16 @@ interface HeroProps {
 }
 
 /** Shared Type Tools hero. */
-export default function Hero({ eyebrow, title, titleWeight = 300, install, github, tech, children }: HeroProps) {
-	const magnet = { as: "span" as const, minWeight: titleWeight, maxWeight: 800, spreadRadius: 220, fixedAxes: { opsz: 144 } }
+export default function Hero({ eyebrow, title, titleWeight = 300, titleFontFamily = "var(--font-merriweather), serif", titleOpsz = 144, install, github, tech, children }: HeroProps) {
+	// Magnet rest weight is a family constant (300), independent of the H1 static weight — matches
+	// every original hero (e.g. threadText's H1 is 360 but its letters still rest at 300).
+	const magnet = { as: "span" as const, minWeight: 300, maxWeight: 800, spreadRadius: 220, fixedAxes: { opsz: 144 } }
+	const titleFontVar = titleOpsz == null ? `"wght" ${titleWeight}` : `"wght" ${titleWeight}, "opsz" ${titleOpsz}`
 	return (
 		<section aria-label="Introduction" className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
 			<div className="flex flex-col gap-2">
 				<p className="text-xs uppercase tracking-[0.18em] font-medium text-muted">{eyebrow}</p>
-				<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: `"wght" ${titleWeight}, "opsz" 144`, lineHeight: "1.05em" }}>
+				<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: titleFontFamily, fontVariationSettings: titleFontVar, lineHeight: "1.05em" }}>
 					{title.map((line, i) => {
 						const style: React.CSSProperties = {}
 						if (line.subtle) style.color = "var(--foreground-subtle)"

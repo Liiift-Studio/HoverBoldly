@@ -1,12 +1,11 @@
 // page.tsx — hoverBoldly landing page
 import Demo from "@/components/Demo"
-import CopyInstall from "@/components/CopyInstall"
+import Hero from "@/components/Hero"
 import CodeBlock from "@/components/CodeBlock"
 import { version } from "../../../package.json"
 import { version as siteVersion } from "../../package.json"
 import SiteFooter from "../components/SiteFooter"
 import PortsSection from "../components/PortsSection"
-import { MagnetChar } from "@liiift-studio/magnettype"
 
 export default function Home() {
 	const jsonLd = {
@@ -28,25 +27,17 @@ export default function Home() {
 			/>
 
 			{/* Hero */}
-			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-6">
-				<div className="flex flex-col gap-2">
-					<p className="text-xs uppercase tracking-[0.18em] font-medium text-muted">reflow-free hover weight</p>
-					<h1 className="text-4xl lg:text-8xl xl:text-9xl" style={{ fontFamily: "var(--font-merriweather), serif", fontVariationSettings: '"wght" 300, "opsz" 144', lineHeight: "1.05em" }}>
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }}>Bold on hover,</MagnetChar><br />
-						<MagnetChar as="span" minWeight={300} maxWeight={800} spreadRadius={220} fixedAxes={{ opsz: 144 }} style={{ color: "var(--foreground-subtle)", fontStyle: "italic" }}>Zero layout shift.</MagnetChar>
-					</h1>
-				</div>
-				<div className="flex flex-wrap items-center gap-4">
-					<CopyInstall />
-					<a href="https://github.com/Liiift-Studio/HoverBoldly" className="text-sm text-muted hover:text-foreground transition-colors">GitHub</a>
-				</div>
-				<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted tracking-wide">
-					<span>TypeScript</span><span>·</span><span>Canvas measurement</span><span>·</span><span>React + Vanilla JS</span>
-				</div>
+			<Hero
+				eyebrow="reflow-free hover weight"
+				title={[{ text: "Bold on hover," }, { text: "Zero layout shift.", italic: true, subtle: true }]}
+				install="@liiift-studio/hoverboldly"
+				github="https://github.com/Liiift-Studio/HoverBoldly"
+				tech={["TypeScript", "Canvas measurement", "React + Vanilla JS"]}
+			>
 				<p className="text-base leading-relaxed max-w-lg">
 					Every browser will reflow text when you hover to bold — words push down, lines shift. Hover Boldly measures the exact width difference using Canvas, then compensates with letter-spacing so the line never moves.
 				</p>
-			</section>
+			</Hero>
 
 			{/* Demo */}
 			<section className="w-full max-w-2xl lg:max-w-5xl flex flex-col gap-4">
