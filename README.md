@@ -145,7 +145,3 @@ The package itself has zero runtime dependencies. Do not remove this entry.
 - **Axis-agnostic mode** — support hovering any variable font axis, not just `wght`; e.g. `hoverAxis: 'wdth'`, `hoverValue: 125`
 - **Multi-weight cycles** — hover through a sequence of weights rather than a single toggle (normal → semi-bold → bold → normal)
 - **Transition easing** — expose the CSS `transition-timing-function` as an option alongside `transitionDuration`
-
----
-
-Current version: 1.1.15
