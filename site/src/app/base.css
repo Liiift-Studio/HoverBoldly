@@ -235,3 +235,22 @@ input[type="range"]:hover::-moz-range-thumb {
 	}
 }
 
+
+/* Reduced motion: users who ask the OS for less motion get instant theme swaps and static thumbs
+   instead of eased transitions. Scoped to the kit's own animated properties (not a blanket
+   `* { transition: none }`) so per-tool demo animations can make their own reduced-motion calls. */
+@media (prefers-reduced-motion: reduce) {
+	body,
+	:root.theme-preview,
+	:root.theme-preview * {
+		transition-duration: 0.01ms;
+	}
+	input[type="range"]::-webkit-slider-thumb,
+	input[type="range"]::-moz-range-thumb {
+		transition: none;
+	}
+	input[type="range"]:hover::-webkit-slider-thumb,
+	input[type="range"]:hover::-moz-range-thumb {
+		transform: none;
+	}
+}

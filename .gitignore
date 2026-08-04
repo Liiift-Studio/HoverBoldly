@@ -2,8 +2,9 @@
 node_modules/
 site/node_modules/
 
-# Next.js build output
+# Next.js build output (site/ normally; bare .next/ guards an accidental root-level next run)
 site/.next/
+.next/
 site/out/
 
 # Turbopack
